@@ -1,4 +1,4 @@
-package com.eqot.xray.processor;
+package com.eqot.xray;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

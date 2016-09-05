@@ -1,6 +1,6 @@
 package com.eqot.xray;
 
-import com.eqot.xray.processor.Xray;
+import com.eqot.xray.Xray;
 
 import org.junit.Test;
 

@@ -1,5 +1,6 @@
 package com.eqot.xray.processor;
 
+import com.eqot.xray.Xray;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -25,7 +26,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 @AutoService(Processor.class)
-@SupportedAnnotationTypes("com.eqot.xray.processor.Xray")
+@SupportedAnnotationTypes("com.eqot.xray.Xray")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class XrayProcessor extends AbstractProcessor {
     @Override
