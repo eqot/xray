@@ -34,10 +34,3 @@ dependencies {
     testApt project(':processor')
     testCompile project(':annotation')
 }
-
-task processorTask(type: Exec) {
-    commandLine 'cp', '../annotation/build/libs/annotation.jar', 'libs/'
-}
-
-processorTask.dependsOn(':processor:build')
-preBuild.dependsOn(processorTask)
