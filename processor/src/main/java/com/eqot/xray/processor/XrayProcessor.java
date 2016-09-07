@@ -58,7 +58,6 @@ public class XrayProcessor extends AbstractProcessor {
     }
 
     private void generateCode(String target) {
-
         final ClassDef classDef = new ClassDef(target);
 
         final ClassName targetClass = ClassName.get(classDef.packageName, classDef.className);
@@ -71,9 +70,29 @@ public class XrayProcessor extends AbstractProcessor {
         classBuilder
                 .addField(targetClass, "mInstance", Modifier.PRIVATE, Modifier.FINAL);
 
-        final MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addStatement("mInstance = new $T()", targetClass);
+        for (ClassDef.MethodDef constructor : classDef.constructors) {
+            final MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC);
+
+            String combinedParameters = "";
+            for (ClassDef.ParameterDef parameterDef : constructor.parameters) {
+                constructorBuilder
+                        .addParameter(parameterDef.type, parameterDef.name);
+
+                if (!combinedParameters.equals("")) {
+                    combinedParameters += ", ";
+                }
+                combinedParameters += parameterDef.name;
+            }
+            constructorBuilder
+                    .addStatement("mInstance = new $T($N)", targetClass, combinedParameters)
+                    .addStatement("initialize()");
+
+            classBuilder.addMethod(constructorBuilder.build());
+        }
+
+        final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
+                .addModifiers(Modifier.PRIVATE);
 
         for (ClassDef.MethodDef methodDef : classDef.methods) {
             String combinedMethodName = "_" + methodDef.name;
@@ -90,7 +109,7 @@ public class XrayProcessor extends AbstractProcessor {
                 argNames += parameterDef.name;
             }
 
-            constructorBuilder
+            initializerBuilder
                     .beginControlFlow("try")
                     .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
                             combinedMethodName, targetClass, methodDef.name, argTypes)
@@ -125,7 +144,7 @@ public class XrayProcessor extends AbstractProcessor {
         }
 
         classBuilder
-                .addMethod(constructorBuilder.build());
+                .addMethod(initializerBuilder.build());
 
         try {
             JavaFileObject source = processingEnv.getFiler().createSourceFile(generatedClass.toString());

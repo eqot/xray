@@ -1,5 +1,6 @@
 package com.eqot.xray.processor;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import javax.lang.model.SourceVersion;
 public class ClassDef {
     final String packageName;
     final String className;
+    final List<MethodDef> constructors = new ArrayList<>();
     final List<MethodDef> methods = new ArrayList<>();
 
     ClassDef(String target) {
@@ -41,6 +43,11 @@ public class ClassDef {
             return;
         }
 
+        for (Constructor constructor : clazz.getDeclaredConstructors()) {
+            MethodDef methodDef = new MethodDef(constructor);
+            constructors.add(methodDef);
+        }
+
         for (Method method : clazz.getDeclaredMethods()) {
             MethodDef methodDef = new MethodDef(method);
             methods.add(methodDef);
@@ -57,6 +64,16 @@ public class ClassDef {
             returnType = method.getReturnType();
 
             for (Parameter parameter : method.getParameters()) {
+                ParameterDef parameterDef = new ParameterDef(parameter);
+                parameters.add(parameterDef);
+            }
+        }
+
+        MethodDef(Constructor constructor) {
+            name = constructor.getName();
+            returnType = null;
+
+            for (Parameter parameter : constructor.getParameters()) {
                 ParameterDef parameterDef = new ParameterDef(parameter);
                 parameters.add(parameterDef);
             }

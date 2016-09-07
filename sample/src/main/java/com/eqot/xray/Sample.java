@@ -1,6 +1,20 @@
 package com.eqot.xray;
 
 public class Sample {
+    private int mValue;
+
+    public Sample() {
+        mValue = 0;
+    }
+
+    public Sample(int value) {
+        mValue = value;
+    }
+
+    private int add(int value) {
+        return mValue + value;
+    }
+
     private int add(int value0, int value1) {
         return value0 + value1;
     }
