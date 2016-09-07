@@ -1,0 +1,43 @@
+language: android
+
+jdk:
+  - oraclejdk8
+
+# env:
+#   global:
+#     - ADB_INSTALL_TIMEOUT=10
+
+android:
+  components:
+    - platform-tools
+    - tools
+    - build-tools-24.0.1
+    - android-24
+    # - extra-android-m2repository
+    # - addon-google_apis-google-23
+    # - sys-img-armeabi-v7a-android-24
+
+# as per http://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure/
+sudo: false
+
+# Emulator Management: Create, Start and Wait
+# before_script:
+  # - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a
+  # - emulator -avd test -no-skin -no-audio -no-window -gpu off &
+  # - android-wait-for-emulator
+  # - adb shell input keyevent 82 &
+
+# script for build and release via Travis to Bintray
+script:
+  - ./gradlew build test
+
+notifications:
+  email: false
+  slack:
+    secure: jZwrbk1ipqNlM4nt4w5WXbQ26+fOSoWJOubrXkui1RjshyrpO9MnKZ9vbonlvaG0ivU+pc94dkPUvgqzDnRBBnNbUDgdeXdhMt1DB/YVmaUgpV7e2bTcXnmY+b0tGS+QQfmLDnRUg+moeyhrkHY4q2lgjrSmT2ircEi2KdaswF/GbuCsYJ0ukPOFp+tsM64IlIOjwSB/S/TY/mqJnRsb+tcfYJR725BZZmHpnVCsQwIJ0iEl+KPOR4KMUpYcwLuR8/3GVe+8D2Ix4jh7exARr0xlE4UCTbv0fx9fhjUpYexHZtgMTau3ztYQo8rwN+oY/tk3SK6zSYbWAeuVctS5yyScN2XSNFH3mGTFvtnzERzCkhOXmerGCU6aQgHcflFzMmwp1LDsF5dNxwn5wEwMQnYA6hCbOvDEAKjcNstIyZ7qzCok+/tahw5hSEa7uQe1ITusl62kjtFo8UPtNJvLDmT+YR54iDGbO1mGFWqMYVMT1ktR7Q1jsRFiCjjfrZZSmslIMMUMUx7UxUXNVyK9VIIp9xvZiT0qub/VaCXPkxyw6zIOP6Z5DU87CTYbbXieifSHpSbN9BbfWfdnqx2XuD4qsz1eiCFI2sZ1Uf/T/sQcfK4USYu/9diLjs+GKNsgCC+8vkr8/8kLI3jBe8GVWyLeqv01SuCI/c0pXzWigNk=
+
+# cache between builds
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.gradle
