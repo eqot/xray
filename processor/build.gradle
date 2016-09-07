@@ -1,8 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'com.novoda.bintray-release'
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+targetCompatibility = rootProject.ext.targetCompatibilityVersion
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -12,10 +12,10 @@ dependencies {
 }
 
 publish {
-    userOrg = 'eqot'
-    groupId = 'com.eqot'
+    userOrg = rootProject.ext.userOrg
+    groupId = rootProject.ext.groupId
+    publishVersion = rootProject.ext.publishVersion
+    website = rootProject.ext.website
     artifactId = 'xray-processor'
-    publishVersion = '0.2.0'
     desc = 'Xray processor'
-    website = 'https://github.com/eqot/xray'
 }
