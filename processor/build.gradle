@@ -15,7 +15,7 @@ publish {
     userOrg = 'eqot'
     groupId = 'com.eqot'
     artifactId = 'xray-processor'
-    publishVersion = '0.1.0'
+    publishVersion = '0.2.0'
     desc = 'Xray processor'
     website = 'https://github.com/eqot/xray'
 }

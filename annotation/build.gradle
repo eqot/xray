@@ -12,7 +12,7 @@ publish {
     userOrg = 'eqot'
     groupId = 'com.eqot'
     artifactId = 'xray'
-    publishVersion = '0.1.0'
+    publishVersion = '0.2.0'
     desc = 'Xray'
     website = 'https://github.com/eqot/xray'
 }
