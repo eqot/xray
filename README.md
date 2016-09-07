@@ -2,7 +2,7 @@
 [![Download](https://api.bintray.com/packages/eqot/maven/xray-processor/images/download.svg)](https://bintray.com/eqot/maven/xray/_latestVersion)
 [![Apache2](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-An annotation which makes class methods visible for testing.
+An annotation which makes class methods accessible for testing.
 
 ## Download
 
