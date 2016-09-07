@@ -1,7 +1,5 @@
 package com.eqot.xray;
 
-import com.eqot.xray.Xray;
-
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -20,5 +18,12 @@ public class SampleTest {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.sub(1, 2);
         assertEquals(result, -1);
+    }
+
+    @Test
+    public void addString() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
+        final String result = sample.add("12", "34");
+        assertEquals(result, "1234");
     }
 }

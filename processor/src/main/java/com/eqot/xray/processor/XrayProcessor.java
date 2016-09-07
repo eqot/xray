@@ -80,7 +80,7 @@ public class XrayProcessor extends AbstractProcessor {
             String argTypes = "";
             String argNames = "";
             for (ClassDef.ParameterDef parameterDef : methodDef.parameters) {
-                combinedMethodName += "_" + parameterDef.type.getName();
+                combinedMethodName += "_" + parameterDef.type.getSimpleName();
 
                 if (!argTypes.equals("")) {
                     argTypes += ", ";
@@ -106,8 +106,12 @@ public class XrayProcessor extends AbstractProcessor {
                         .addParameter(parameterDef.type, parameterDef.name);
             }
 
+            final String returnType = methodDef.returnType.getSimpleName();
+            final String returnTypeDefault = returnType.equals("int") ?
+                    "0" : "new " + returnType + "()";
+
             methodSpecBuilder
-                    .addStatement("$N result = 0", methodDef.returnType.getName())
+                    .addStatement("$N result = $N", returnType, returnTypeDefault)
                     .beginControlFlow("try")
                     .addStatement("result = ($N) $N.invoke(mInstance, $N)",
                             methodDef.returnType.getName(), combinedMethodName, argNames)
