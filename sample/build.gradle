@@ -22,6 +22,9 @@ android {
         sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
         targetCompatibility = rootProject.ext.targetCompatibilityVersion
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
