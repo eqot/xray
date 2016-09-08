@@ -26,7 +26,20 @@ dependencies {
 }
 ```
 
+or
+
+```
+apply plugin: 'com.neenbedankt.android-apt'
+
+dependencies {
+    androidTestApt 'com.eqot:xray-processor:0.2.0'
+    androidTestCompile 'com.eqot:xray:0.2.0'
+}
+```
+
 ## Sample usage
+
+Here is a private method in a sample class which needs to be verified if it works as expected.
 
 ```
 public class Sample {
@@ -35,6 +48,9 @@ public class Sample {
     }
 }
 ```
+
+The annotation ```@Xray``` generates a wrapper class for the specified class with a postfix ```$Xray```.
+The generated wrapper has the same methods as the specified class but all methods are accessible as public methods.
 
 ```
 @Xray(Sample.class)
