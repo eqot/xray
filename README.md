@@ -37,9 +37,10 @@ dependencies {
 }
 ```
 
-## Sample usage
+## Examples
 
-Here is a private method in a sample class which needs to be verified if it works as expected.
+Here is an example of a private method ```Sample#add()```
+which needs to be verified if it works as expected.
 
 ```
 public class Sample {
@@ -49,7 +50,8 @@ public class Sample {
 }
 ```
 
-The annotation ```@Xray``` generates a wrapper class for the specified class with a postfix ```$Xray```.
+The annotation ```@Xray``` generates a wrapper class for the specified class with a postfix,
+```Sample$Xray``` in this case.
 The generated wrapper has the same methods as the specified class but all methods are accessible as public methods.
 
 ```
