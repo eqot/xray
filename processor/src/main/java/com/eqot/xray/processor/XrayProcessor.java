@@ -93,6 +93,9 @@ public class XrayProcessor extends AbstractProcessor {
 
         final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
                 .addModifiers(Modifier.PRIVATE);
+        final MethodSpec.Builder initializerStaticBuilder = MethodSpec.methodBuilder("initializeStatic")
+                .addModifiers(Modifier.PRIVATE)
+                .addModifiers(Modifier.STATIC);
 
         for (ClassDef.MethodDef methodDef : classDef.methods) {
             String combinedMethodName = "_" + methodDef.name;
@@ -109,16 +112,30 @@ public class XrayProcessor extends AbstractProcessor {
                 argNames += parameterDef.name;
             }
 
-            initializerBuilder
-                    .beginControlFlow("try")
-                    .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
-                            combinedMethodName, targetClass, methodDef.name, argTypes)
-                    .addStatement("$N.setAccessible(true)", combinedMethodName)
-                    .endControlFlow("catch (Exception e) {}");
+            if (methodDef.isStatic) {
+                initializerStaticBuilder
+                        .beginControlFlow("try")
+                        .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
+                                combinedMethodName, targetClass, methodDef.name, argTypes)
+                        .addStatement("$N.setAccessible(true)", combinedMethodName)
+                        .endControlFlow("catch (Exception e) {}");
+            } else {
+                initializerBuilder
+                        .beginControlFlow("try")
+                        .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
+                                combinedMethodName, targetClass, methodDef.name, argTypes)
+                        .addStatement("$N.setAccessible(true)", combinedMethodName)
+                        .endControlFlow("catch (Exception e) {}");
+            }
 
             MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(methodDef.name)
                     .addModifiers(Modifier.PUBLIC)
                     .returns(methodDef.returnType);
+
+            if (methodDef.isStatic) {
+                methodSpecBuilder
+                        .addModifiers(Modifier.STATIC);
+            }
 
             for (ClassDef.ParameterDef parameterDef : methodDef.parameters) {
                 methodSpecBuilder
@@ -129,22 +146,37 @@ public class XrayProcessor extends AbstractProcessor {
             final String returnTypeDefault = returnType.equals("int") ?
                     "0" : "new " + returnType + "()";
 
+            final String instance = methodDef.isStatic ? "null" : "mInstance";
+
+            if (methodDef.isStatic) {
+                methodSpecBuilder
+                        .addStatement("initializeStatic()");
+            }
+
             methodSpecBuilder
                     .addStatement("$N result = $N", returnType, returnTypeDefault)
                     .beginControlFlow("try")
-                    .addStatement("result = ($N) $N.invoke(mInstance, $N)",
-                            methodDef.returnType.getName(), combinedMethodName, argNames)
+                    .addStatement("result = ($N) $N.invoke($N, $N)",
+                            methodDef.returnType.getName(), combinedMethodName, instance, argNames)
                     .endControlFlow("catch (Exception e) {}")
                     .addStatement("return result")
                     .build();
 
+            if (methodDef.isStatic) {
+                classBuilder
+                        .addField(Method.class, combinedMethodName, Modifier.PRIVATE, Modifier.STATIC);
+            } else {
+                classBuilder
+                        .addField(Method.class, combinedMethodName, Modifier.PRIVATE);
+            }
+
             classBuilder
-                    .addField(Method.class, combinedMethodName, Modifier.PRIVATE)
                     .addMethod(methodSpecBuilder.build());
         }
 
         classBuilder
-                .addMethod(initializerBuilder.build());
+                .addMethod(initializerBuilder.build())
+                .addMethod(initializerStaticBuilder.build());
 
         try {
             JavaFileObject source = processingEnv.getFiler().createSourceFile(generatedClass.toString());

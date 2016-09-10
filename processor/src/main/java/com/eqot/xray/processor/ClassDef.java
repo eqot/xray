@@ -2,6 +2,7 @@ package com.eqot.xray.processor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +57,15 @@ public class ClassDef {
 
     public class MethodDef {
         final String name;
+        final boolean isStatic;
         final Class<?> returnType;
         final List<ParameterDef> parameters = new ArrayList<>();
 
         MethodDef(Method method) {
             name = method.getName();
             returnType = method.getReturnType();
+
+            isStatic = (method.getModifiers() & Modifier.STATIC) != 0;
 
             for (Parameter parameter : method.getParameters()) {
                 ParameterDef parameterDef = new ParameterDef(parameter);
@@ -72,6 +76,8 @@ public class ClassDef {
         MethodDef(Constructor constructor) {
             name = constructor.getName();
             returnType = null;
+
+            isStatic = false;
 
             for (Parameter parameter : constructor.getParameters()) {
                 ParameterDef parameterDef = new ParameterDef(parameter);
