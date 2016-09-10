@@ -61,7 +61,7 @@ public class SampleTest {
     public void add() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.add(1, 2);
-        assertEquals(result, 3);
+        assertEquals(3, result);
     }
 }
 ```

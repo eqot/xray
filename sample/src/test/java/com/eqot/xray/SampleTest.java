@@ -10,27 +10,27 @@ public class SampleTest {
     public void addWithMember() throws Exception {
         final Sample$Xray sample = new Sample$Xray(1);
         final int result = sample.add(2);
-        assertEquals(result, 3);
+        assertEquals(3, result);
     }
 
     @Test
     public void add() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.add(1, 2);
-        assertEquals(result, 3);
+        assertEquals(3, result);
     }
 
     @Test
     public void sub() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.sub(1, 2);
-        assertEquals(result, -1);
+        assertEquals(-1, result);
     }
 
     @Test
     public void addString() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         final String result = sample.add("12", "34");
-        assertEquals(result, "1234");
+        assertEquals("1234", result);
     }
 }
