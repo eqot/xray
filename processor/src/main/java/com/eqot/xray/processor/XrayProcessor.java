@@ -10,6 +10,8 @@ import com.squareup.javapoet.TypeSpec;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -29,6 +31,20 @@ import javax.tools.JavaFileObject;
 @SupportedAnnotationTypes("com.eqot.xray.Xray")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class XrayProcessor extends AbstractProcessor {
+    private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
+        {
+            put("boolean", "false");
+            put("byte", "0");
+            put("short", "0");
+            put("int", "0");
+            put("long", "0L");
+            put("float", "0f");
+            put("double", "0d");
+            put("char", "'\u0000'");
+            put("Integer", "0");
+        }
+    };
+
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(Xray.class)) {
@@ -143,8 +159,8 @@ public class XrayProcessor extends AbstractProcessor {
             }
 
             final String returnType = methodDef.returnType.getSimpleName();
-            final String returnTypeDefault = returnType.equals("int") ?
-                    "0" : "new " + returnType + "()";
+            final String returnTypeDefault = CLASS_DEFAULTS.containsKey(returnType) ?
+                    CLASS_DEFAULTS.get(returnType) : "null";
 
             final String instance = methodDef.isStatic ? "null" : "mInstance";
 

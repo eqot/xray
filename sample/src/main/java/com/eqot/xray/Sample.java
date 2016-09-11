@@ -26,4 +26,15 @@ public class Sample {
     private String add(String word0, String word1) {
         return word0 + word1;
     }
+
+    private boolean nop(boolean value) { return value; }
+    private byte nop(byte value) { return value; }
+    private short nop(short value) { return value; }
+    private int nop(int value) { return value; }
+    private long nop(long value) { return value; }
+    private float nop(float value) { return value; }
+    private double nop(double value) { return value; }
+    private char nop(char value) { return value; }
+    private Integer nop(Integer value) { return value; }
+    private String nop(String value) { return value; }
 }
