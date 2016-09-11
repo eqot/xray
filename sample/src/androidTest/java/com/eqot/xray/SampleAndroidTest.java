@@ -24,13 +24,13 @@ public class SampleAndroidTest {
 
     @Test
     public void nop() throws Exception {
-        final SampleAndroid$Xray sample = new SampleAndroid$Xray();
+        final SampleAndroid$Xray sample = new SampleAndroid$Xray(mContext);
         assertEquals("123", sample.nop("123"));
     }
 
     @Test
     public void nopWithContext() throws Exception {
-        final SampleAndroid$Xray sample = new SampleAndroid$Xray();
+        final SampleAndroid$Xray sample = new SampleAndroid$Xray(mContext);
         assertEquals("123", sample.nop(mContext, "123"));
     }
 }
