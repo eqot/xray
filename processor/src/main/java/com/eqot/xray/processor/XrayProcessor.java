@@ -169,14 +169,23 @@ public class XrayProcessor extends AbstractProcessor {
                         .addStatement("initializeStatic()");
             }
 
-            methodSpecBuilder
-                    .addStatement("$N result = $N", returnType, returnTypeDefault)
-                    .beginControlFlow("try")
-                    .addStatement("result = ($N) $N.invoke($N, $N)",
-                            methodDef.returnType.getName(), combinedMethodName, instance, argNames)
-                    .endControlFlow("catch (Exception e) {}")
-                    .addStatement("return result")
-                    .build();
+            if (!returnType.equals("void")) {
+                methodSpecBuilder
+                        .addStatement("$N result = $N", returnType, returnTypeDefault)
+                        .beginControlFlow("try")
+                        .addStatement("result = ($N) $N.invoke($N, $N)",
+                                methodDef.returnType.getName(), combinedMethodName, instance, argNames)
+                        .endControlFlow("catch (Exception e) {}")
+                        .addStatement("return result");
+            } else {
+                methodSpecBuilder
+//                        .addStatement("$N result = $N", returnType, returnTypeDefault)
+                        .beginControlFlow("try")
+                        .addStatement("$N.invoke($N, $N)",
+                                combinedMethodName, instance, argNames)
+                        .endControlFlow("catch (Exception e) {}");
+//                        .addStatement("return result");
+            }
 
             if (methodDef.isStatic) {
                 classBuilder

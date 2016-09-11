@@ -37,4 +37,6 @@ public class Sample {
     private char nop(char value) { return value; }
     private Integer nop(Integer value) { return value; }
     private String nop(String value) { return value; }
+
+    private void nopWithIntArg(int value) {}
 }
