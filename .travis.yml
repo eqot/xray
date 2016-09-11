@@ -3,9 +3,9 @@ language: android
 jdk:
   - oraclejdk8
 
-# env:
-#   global:
-#     - ADB_INSTALL_TIMEOUT=10
+env:
+  global:
+    - ADB_INSTALL_TIMEOUT=10
 
 android:
   components:
@@ -15,21 +15,21 @@ android:
     - android-24
     - extra-android-m2repository
     # - addon-google_apis-google-23
-    # - sys-img-armeabi-v7a-android-24
+    - sys-img-armeabi-v7a-android-24
 
 # as per http://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure/
 sudo: false
 
 # Emulator Management: Create, Start and Wait
-# before_script:
-  # - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a
-  # - emulator -avd test -no-skin -no-audio -no-window -gpu off &
-  # - android-wait-for-emulator
-  # - adb shell input keyevent 82 &
+before_script:
+  - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window -gpu off &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
 # script for build and release via Travis to Bintray
 script:
-  - ./gradlew build test
+  - ./gradlew build test connectedCheck
 
 notifications:
   email: false
