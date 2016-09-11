@@ -39,4 +39,5 @@ public class Sample {
     private String nop(String value) { return value; }
 
     private void nopWithIntArg(int value) {}
+    private int nop() { return 123; }
 }

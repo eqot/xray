@@ -119,26 +119,21 @@ public class XrayProcessor extends AbstractProcessor {
             String argNames = "";
             for (ClassDef.ParameterDef parameterDef : methodDef.parameters) {
                 combinedMethodName += "_" + parameterDef.type.getSimpleName();
-
-                if (!argTypes.equals("")) {
-                    argTypes += ", ";
-                    argNames += ", ";
-                }
-                argTypes += parameterDef.type.getName() + ".class";
-                argNames += parameterDef.name;
+                argTypes += ", " + parameterDef.type.getName() + ".class";
+                argNames += ", " + parameterDef.name;
             }
 
             if (methodDef.isStatic) {
                 initializerStaticBuilder
                         .beginControlFlow("try")
-                        .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
+                        .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
                                 combinedMethodName, targetClass, methodDef.name, argTypes)
                         .addStatement("$N.setAccessible(true)", combinedMethodName)
                         .endControlFlow("catch (Exception e) {}");
             } else {
                 initializerBuilder
                         .beginControlFlow("try")
-                        .addStatement("$N = $T.class.getDeclaredMethod($S, $N)",
+                        .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
                                 combinedMethodName, targetClass, methodDef.name, argTypes)
                         .addStatement("$N.setAccessible(true)", combinedMethodName)
                         .endControlFlow("catch (Exception e) {}");
@@ -173,18 +168,16 @@ public class XrayProcessor extends AbstractProcessor {
                 methodSpecBuilder
                         .addStatement("$N result = $N", returnType, returnTypeDefault)
                         .beginControlFlow("try")
-                        .addStatement("result = ($N) $N.invoke($N, $N)",
+                        .addStatement("result = ($N) $N.invoke($N$N)",
                                 methodDef.returnType.getName(), combinedMethodName, instance, argNames)
                         .endControlFlow("catch (Exception e) {}")
                         .addStatement("return result");
             } else {
                 methodSpecBuilder
-//                        .addStatement("$N result = $N", returnType, returnTypeDefault)
                         .beginControlFlow("try")
-                        .addStatement("$N.invoke($N, $N)",
+                        .addStatement("$N.invoke($N$N)",
                                 combinedMethodName, instance, argNames)
                         .endControlFlow("catch (Exception e) {}");
-//                        .addStatement("return result");
             }
 
             if (methodDef.isStatic) {

@@ -97,6 +97,12 @@ public class SampleTest {
     @Test
     public void nopVoid() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
+        assertEquals(123, sample.nop());
+    }
+
+    @Test
+    public void nopNoReturn() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
         sample.nopWithIntArg(123);
     }
 }
