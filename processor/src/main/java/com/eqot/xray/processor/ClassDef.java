@@ -1,6 +1,7 @@
 package com.eqot.xray.processor;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -64,24 +65,23 @@ public class ClassDef {
         MethodDef(Method method) {
             name = method.getName();
             returnType = method.getReturnType();
-
             isStatic = (method.getModifiers() & Modifier.STATIC) != 0;
 
-            for (Parameter parameter : method.getParameters()) {
-                ParameterDef parameterDef = new ParameterDef(parameter);
-                parameters.add(parameterDef);
-            }
+            addParameters(method.getParameters());
         }
 
         MethodDef(Constructor constructor) {
             name = constructor.getName();
             returnType = null;
-
             isStatic = false;
 
-            for (Parameter parameter : constructor.getParameters()) {
+            addParameters(constructor.getParameters());
+        }
+
+        private void addParameters(Parameter[] parameters) {
+            for (Parameter parameter : parameters) {
                 ParameterDef parameterDef = new ParameterDef(parameter);
-                parameters.add(parameterDef);
+                this.parameters.add(parameterDef);
             }
         }
     }
