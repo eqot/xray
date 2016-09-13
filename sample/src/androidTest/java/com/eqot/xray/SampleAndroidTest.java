@@ -3,6 +3,8 @@ package com.eqot.xray;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import com.eqot.xray.xray.SampleAndroid$Xray;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,5 +1,7 @@
 package com.eqot.xray;
 
+import com.eqot.xray.xray.SampleStatic$Xray;
+
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;

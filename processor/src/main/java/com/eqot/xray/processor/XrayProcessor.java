@@ -31,6 +31,9 @@ import javax.tools.JavaFileObject;
 @SupportedAnnotationTypes("com.eqot.xray.Xray")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class XrayProcessor extends AbstractProcessor {
+    private static final String POSTFIX_OF_GENERATED_PACKAGE = ".xray";
+    private static final String POSTFIX_OF_GENERATED_CLASS = "$Xray";
+
     private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
         {
             put("boolean", "false");
@@ -72,7 +75,8 @@ public class XrayProcessor extends AbstractProcessor {
     private void generateCode(String target) {
         final ClassDef classDef = new ClassDef(target);
         final ClassName generatedClassName = ClassName.get(
-                classDef.packageName, classDef.className + "$Xray");
+                classDef.packageName + POSTFIX_OF_GENERATED_PACKAGE,
+                classDef.className + POSTFIX_OF_GENERATED_CLASS);
 
         final TypeSpec generatedClass = buildClass(target);
 
