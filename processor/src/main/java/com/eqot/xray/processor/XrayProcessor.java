@@ -48,32 +48,52 @@ public class XrayProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(Xray.class)) {
-            processElement(element);
+            final Xray xray = element.getAnnotation(Xray.class);
+            if (xray == null) {
+                continue;
+            }
+
+            String className = "";
+            try {
+                xray.value();
+            } catch (MirroredTypeException mte) {
+                className = mte.getTypeMirror().toString();
+            }
+            if (className.equals("") || className.equals("java.lang.Object")) {
+                continue;
+            }
+
+            generateCode(className);
         }
 
         return true;
     }
 
-    private void processElement(Element element) {
-        final Xray xray = element.getAnnotation(Xray.class);
-        if (xray == null) {
-            return;
-        }
+    private void generateCode(String target) {
+        final ClassDef classDef = new ClassDef(target);
+        final ClassName generatedClassName = ClassName.get(
+                classDef.packageName, classDef.className + "$Xray");
 
-        String className = "";
+        final TypeSpec generatedClass = buildClass(target);
+
         try {
-            xray.value();
-        } catch (MirroredTypeException mte) {
-            className = mte.getTypeMirror().toString();
-        }
-        if (className.equals("") || className.equals("java.lang.Object")) {
-            return;
-        }
+            final JavaFileObject source = processingEnv.getFiler().createSourceFile(
+                    generatedClassName.toString());
+            final Writer writer = source.openWriter();
 
-        generateCode(className);
+            JavaFile.builder(generatedClassName.packageName(), generatedClass)
+                    .build()
+                    .writeTo(writer);
+//                    .writeTo(System.out);
+
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void generateCode(String target) {
+    private TypeSpec buildClass(String target) {
         final ClassDef classDef = new ClassDef(target);
 
         final ClassName targetClass = ClassName.get(classDef.packageName, classDef.className);
@@ -196,20 +216,7 @@ public class XrayProcessor extends AbstractProcessor {
                 .addMethod(initializerBuilder.build())
                 .addMethod(initializerStaticBuilder.build());
 
-        try {
-            JavaFileObject source = processingEnv.getFiler().createSourceFile(generatedClass.toString());
-            Writer writer = source.openWriter();
-
-            JavaFile.builder(classDef.packageName, classBuilder.build())
-                    .build()
-                    .writeTo(writer);
-//                    .writeTo(System.out);
-
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return classBuilder.build();
     }
 
     private void log(String message) {
