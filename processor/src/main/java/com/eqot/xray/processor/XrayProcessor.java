@@ -10,7 +10,9 @@ import com.squareup.javapoet.TypeSpec;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ public class XrayProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
+        final List<String> classNames = new ArrayList<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(Xray.class)) {
             final Xray xray = element.getAnnotation(Xray.class);
             if (xray == null) {
@@ -66,6 +69,12 @@ public class XrayProcessor extends AbstractProcessor {
                 continue;
             }
 
+            if (!classNames.contains(className)) {
+                classNames.add(className);
+            }
+        }
+
+        for (String className : classNames) {
             generateCode(className);
         }
 
