@@ -33,8 +33,8 @@ import javax.tools.JavaFileObject;
 @SupportedAnnotationTypes("com.eqot.xray.Xray")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class XrayProcessor extends AbstractProcessor {
-    private static final String POSTFIX_OF_GENERATED_PACKAGE = ".xray";
-    private static final String POSTFIX_OF_GENERATED_CLASS = "$Xray";
+    private static final String POSTFIX_OF_DST_PACKAGE = ".xray";
+    private static final String POSTFIX_OF_DST_CLASS = "$Xray";
 
     private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
         {
@@ -52,20 +52,20 @@ public class XrayProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
-        final List<String> classNames = new ArrayList<>();
+        final List<ClassName> classNames = new ArrayList<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(Xray.class)) {
             final Xray xray = element.getAnnotation(Xray.class);
             if (xray == null) {
                 continue;
             }
 
-            String className = "";
+            ClassName className = null;
             try {
                 xray.value();
             } catch (MirroredTypeException mte) {
-                className = mte.getTypeMirror().toString();
+                className = ClassName.bestGuess(mte.getTypeMirror().toString());
             }
-            if (className.equals("") || className.equals("java.lang.Object")) {
+            if (className == null || className.toString().equals("java.lang.Object")) {
                 continue;
             }
 
@@ -74,27 +74,26 @@ public class XrayProcessor extends AbstractProcessor {
             }
         }
 
-        for (String className : classNames) {
+        for (ClassName className : classNames) {
             generateCode(className);
         }
 
         return true;
     }
 
-    private void generateCode(String classNames) {
-        final ClassDef classDef = new ClassDef(classNames);
-        final ClassName generatedClassName = ClassName.get(
-                classDef.packageName + POSTFIX_OF_GENERATED_PACKAGE,
-                classDef.className + POSTFIX_OF_GENERATED_CLASS);
+    private void generateCode(ClassName srcClassName) {
+        final ClassName dstClassName = ClassName.get(
+                srcClassName.packageName() + POSTFIX_OF_DST_PACKAGE,
+                srcClassName.simpleName() + POSTFIX_OF_DST_CLASS);
 
-        final TypeSpec generatedClass = buildClass(classNames);
+        final TypeSpec dstClass = buildClass(srcClassName, dstClassName);
 
         try {
             final JavaFileObject source = processingEnv.getFiler().createSourceFile(
-                    generatedClassName.toString());
+                    dstClassName.toString());
             final Writer writer = source.openWriter();
 
-            JavaFile.builder(generatedClassName.packageName(), generatedClass)
+            JavaFile.builder(dstClassName.packageName(), dstClass)
                     .build()
                     .writeTo(writer);
 //                    .writeTo(System.out);
@@ -106,18 +105,14 @@ public class XrayProcessor extends AbstractProcessor {
         }
     }
 
-    private TypeSpec buildClass(String target) {
-        final ClassDef classDef = new ClassDef(target);
+    private TypeSpec buildClass(ClassName srcClassName, ClassName dstClassName) {
+        final ClassDef classDef = new ClassDef(srcClassName.toString());
 
-        final ClassName targetClass = ClassName.get(classDef.packageName, classDef.className);
-        final ClassName generatedClass = ClassName.get(
-                classDef.packageName, classDef.className + "$Xray");
-
-        final TypeSpec.Builder classBuilder = TypeSpec.classBuilder(generatedClass.simpleName())
+        final TypeSpec.Builder classBuilder = TypeSpec.classBuilder(dstClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC);
 
         classBuilder
-                .addField(targetClass, "mInstance", Modifier.PRIVATE, Modifier.FINAL);
+                .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL);
 
         for (ClassDef.MethodDef constructor : classDef.constructors) {
             final MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
@@ -134,7 +129,7 @@ public class XrayProcessor extends AbstractProcessor {
                 combinedParameters += parameterDef.name;
             }
             constructorBuilder
-                    .addStatement("mInstance = new $T($N)", targetClass, combinedParameters)
+                    .addStatement("mInstance = new $T($N)", srcClassName, combinedParameters)
                     .addStatement("initialize()");
 
             classBuilder.addMethod(constructorBuilder.build());
@@ -160,14 +155,14 @@ public class XrayProcessor extends AbstractProcessor {
                 initializerStaticBuilder
                         .beginControlFlow("try")
                         .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
-                                combinedMethodName, targetClass, methodDef.name, argTypes)
+                                combinedMethodName, srcClassName, methodDef.name, argTypes)
                         .addStatement("$N.setAccessible(true)", combinedMethodName)
                         .endControlFlow("catch (Exception e) {}");
             } else {
                 initializerBuilder
                         .beginControlFlow("try")
                         .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
-                                combinedMethodName, targetClass, methodDef.name, argTypes)
+                                combinedMethodName, srcClassName, methodDef.name, argTypes)
                         .addStatement("$N.setAccessible(true)", combinedMethodName)
                         .endControlFlow("catch (Exception e) {}");
             }
