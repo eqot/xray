@@ -81,13 +81,13 @@ public class XrayProcessor extends AbstractProcessor {
         return true;
     }
 
-    private void generateCode(String target) {
-        final ClassDef classDef = new ClassDef(target);
+    private void generateCode(String classNames) {
+        final ClassDef classDef = new ClassDef(classNames);
         final ClassName generatedClassName = ClassName.get(
                 classDef.packageName + POSTFIX_OF_GENERATED_PACKAGE,
                 classDef.className + POSTFIX_OF_GENERATED_CLASS);
 
-        final TypeSpec generatedClass = buildClass(target);
+        final TypeSpec generatedClass = buildClass(classNames);
 
         try {
             final JavaFileObject source = processingEnv.getFiler().createSourceFile(
