@@ -1,7 +1,8 @@
 package com.eqot.xray.processor;
 
+import com.squareup.javapoet.ClassName;
+
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -13,27 +14,12 @@ import javax.lang.model.SourceVersion;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class ClassDef {
-    final String packageName;
-    final String className;
+    final ClassName className;
     final List<MethodDef> constructors = new ArrayList<>();
     final List<MethodDef> methods = new ArrayList<>();
 
     ClassDef(String target) {
-        final String[] words = target.split("\\.");
-        String tmpPackageName = "";
-        String tmpClassName = "";
-        for (int i = 0, l = words.length; i < l; i++) {
-            if (i < l - 1) {
-                if (i != 0) {
-                    tmpPackageName += ".";
-                }
-                tmpPackageName += words[i];
-            } else {
-                tmpClassName = words[i];
-            }
-        }
-        packageName = tmpPackageName;
-        className = tmpClassName;
+        className = ClassName.bestGuess(target);
 
         Class clazz = null;
         try {
