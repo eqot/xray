@@ -9,6 +9,18 @@ import static junit.framework.Assert.assertEquals;
 @Xray(Sample.class)
 public class SampleTest {
     @Test
+    public void constructorWithInt() throws Exception {
+        final Sample$Xray sample = new Sample$Xray(123);
+        assertEquals(123, sample.mValue$Xray());
+    }
+
+    @Test
+    public void constructorWithString() throws Exception {
+        final Sample$Xray sample = new Sample$Xray("abc");
+        assertEquals("abc", sample.mString$Xray());
+    }
+
+    @Test
     public void addWithMember() throws Exception {
         final Sample$Xray sample = new Sample$Xray(1);
         final int result = sample.add(2);

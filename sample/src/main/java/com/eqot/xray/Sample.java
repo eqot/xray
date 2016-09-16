@@ -2,6 +2,7 @@ package com.eqot.xray;
 
 public class Sample {
     private int mValue;
+    private String mString;
 
     public Sample() {
         mValue = 0;
@@ -9,6 +10,10 @@ public class Sample {
 
     public Sample(int value) {
         mValue = value;
+    }
+
+    public Sample(String string) {
+        mString = string;
     }
 
     private int add(int value) {

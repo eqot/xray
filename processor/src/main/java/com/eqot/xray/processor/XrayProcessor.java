@@ -9,6 +9,7 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,8 @@ import javax.tools.JavaFileObject;
 public class XrayProcessor extends AbstractProcessor {
     private static final String POSTFIX_OF_DST_PACKAGE = ".xray";
     private static final String POSTFIX_OF_DST_CLASS = "$Xray";
+
+    private static final ClassName CLASS_NAME_FIELD = ClassName.bestGuess("java.lang.reflect.Field");
 
     private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
         {
@@ -106,6 +109,16 @@ public class XrayProcessor extends AbstractProcessor {
     }
 
     private TypeSpec buildClass(ClassName srcClassName, ClassName dstClassName) {
+        Class clazz = null;
+        try {
+            clazz = Class.forName(srcClassName.toString());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (clazz == null) {
+            return null;
+        }
+
         final ClassDef classDef = new ClassDef(srcClassName.toString());
 
         final TypeSpec.Builder classBuilder = TypeSpec.classBuilder(dstClassName.simpleName())
@@ -113,7 +126,8 @@ public class XrayProcessor extends AbstractProcessor {
 
         classBuilder
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
-                .addMethods(buildConstructors(srcClassName, classDef));
+                .addMethods(buildConstructors(srcClassName, classDef))
+                .addMethods(buildSetterAndGetter(clazz));
 
         final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
                 .addModifiers(Modifier.PRIVATE);
@@ -230,6 +244,36 @@ public class XrayProcessor extends AbstractProcessor {
         }
 
         return methodSpecs;
+    }
+
+    private List<MethodSpec> buildSetterAndGetter(Class clazz) {
+        final List<MethodSpec> methods = new ArrayList<>();
+
+        for (Field field : clazz.getDeclaredFields()) {
+            final String name = field.getName() + POSTFIX_OF_DST_CLASS;
+            final Class<?> fieldType = field.getType();
+            final String fieldTypeDefault = getDefaultValue(field.getType().getSimpleName());
+
+            final MethodSpec.Builder builder = MethodSpec.methodBuilder(name)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(field.getType())
+                    .addStatement("$T result = $N", fieldType, fieldTypeDefault)
+                    .beginControlFlow("try")
+                    .addStatement("$T field = mInstance.getClass().getDeclaredField($S)",
+                            CLASS_NAME_FIELD, field.getName())
+                    .addStatement("field.setAccessible(true)")
+                    .addStatement("result = ($T) field.get(mInstance)", fieldType)
+                    .endControlFlow("catch (Exception e) {}")
+                    .addStatement("return result");
+
+            methods.add(builder.build());
+        }
+
+        return methods;
+    }
+
+    private String getDefaultValue(String className) {
+        return CLASS_DEFAULTS.containsKey(className) ? CLASS_DEFAULTS.get(className) : "null";
     }
 
     private void log(String message) {
