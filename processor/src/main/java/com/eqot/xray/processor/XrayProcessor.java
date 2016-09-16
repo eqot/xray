@@ -112,28 +112,8 @@ public class XrayProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC);
 
         classBuilder
-                .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL);
-
-        for (ClassDef.MethodDef constructor : classDef.constructors) {
-            final MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
-                    .addModifiers(Modifier.PUBLIC);
-
-            String combinedParameters = "";
-            for (ClassDef.ParameterDef parameterDef : constructor.parameters) {
-                constructorBuilder
-                        .addParameter(parameterDef.type, parameterDef.name);
-
-                if (!combinedParameters.equals("")) {
-                    combinedParameters += ", ";
-                }
-                combinedParameters += parameterDef.name;
-            }
-            constructorBuilder
-                    .addStatement("mInstance = new $T($N)", srcClassName, combinedParameters)
-                    .addStatement("initialize()");
-
-            classBuilder.addMethod(constructorBuilder.build());
-        }
+                .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
+                .addMethods(buildConstructors(srcClassName, classDef));
 
         final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
                 .addModifiers(Modifier.PRIVATE);
@@ -225,6 +205,31 @@ public class XrayProcessor extends AbstractProcessor {
                 .addMethod(initializerStaticBuilder.build());
 
         return classBuilder.build();
+    }
+
+    private List<MethodSpec> buildConstructors(ClassName srcClassName, ClassDef classDef) {
+        final List<MethodSpec> methodSpecs = new ArrayList<>();
+        for (ClassDef.MethodDef constructor : classDef.constructors) {
+            final MethodSpec.Builder builder = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC);
+
+            String combinedParameters = "";
+            for (ClassDef.ParameterDef parameterDef : constructor.parameters) {
+                builder.addParameter(parameterDef.type, parameterDef.name);
+
+                if (!combinedParameters.equals("")) {
+                    combinedParameters += ", ";
+                }
+                combinedParameters += parameterDef.name;
+            }
+
+            builder.addStatement("mInstance = new $T($N)", srcClassName, combinedParameters)
+                    .addStatement("initialize()");
+
+            methodSpecs.add(builder.build());
+        }
+
+        return methodSpecs;
     }
 
     private void log(String message) {
