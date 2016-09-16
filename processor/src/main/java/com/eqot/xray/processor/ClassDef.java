@@ -3,6 +3,7 @@ package com.eqot.xray.processor;
 import com.squareup.javapoet.ClassName;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -17,6 +18,7 @@ public class ClassDef {
     final ClassName className;
     final List<MethodDef> constructors = new ArrayList<>();
     final List<MethodDef> methods = new ArrayList<>();
+    final List<FieldDef> fields = new ArrayList<>();
 
     ClassDef(String target) {
         className = ClassName.bestGuess(target);
@@ -39,6 +41,11 @@ public class ClassDef {
         for (Method method : clazz.getDeclaredMethods()) {
             MethodDef methodDef = new MethodDef(method);
             methods.add(methodDef);
+        }
+
+        for (Field field : clazz.getDeclaredFields()) {
+            FieldDef fieldDef = new FieldDef(field);
+            fields.add(fieldDef);
         }
     }
 
@@ -79,6 +86,16 @@ public class ClassDef {
         ParameterDef(Parameter parameter) {
             type = parameter.getType();
             name = parameter.getName();
+        }
+    }
+
+    public class FieldDef {
+        final Class<?> type;
+        final String name;
+
+        FieldDef(Field field) {
+            type = field.getType();
+            name = field.getName();
         }
     }
 }
