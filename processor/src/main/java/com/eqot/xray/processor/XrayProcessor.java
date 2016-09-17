@@ -254,7 +254,8 @@ public class XrayProcessor extends AbstractProcessor {
             final Class<?> fieldType = field.getType();
             final String fieldTypeDefault = getDefaultValue(field.getType().getSimpleName());
 
-            final MethodSpec.Builder builder = MethodSpec.methodBuilder(name)
+            // Getter
+            methods.add(MethodSpec.methodBuilder(name)
                     .addModifiers(Modifier.PUBLIC)
                     .returns(field.getType())
                     .addStatement("$T result = $N", fieldType, fieldTypeDefault)
@@ -264,9 +265,8 @@ public class XrayProcessor extends AbstractProcessor {
                     .addStatement("field.setAccessible(true)")
                     .addStatement("result = ($T) field.get(mInstance)", fieldType)
                     .endControlFlow("catch (Exception e) {}")
-                    .addStatement("return result");
-
-            methods.add(builder.build());
+                    .addStatement("return result")
+                    .build());
         }
 
         return methods;
