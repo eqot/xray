@@ -12,7 +12,6 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +38,7 @@ public class XrayProcessor extends AbstractProcessor {
     private static final String POSTFIX_OF_DST_PACKAGE = ".xray";
     private static final String POSTFIX_OF_DST_CLASS = "$Xray";
 
+    private static final ClassName CLASS_NAME_METHOD = ClassName.bestGuess("java.lang.reflect.Method");
     private static final ClassName CLASS_NAME_FIELD = ClassName.bestGuess("java.lang.reflect.Field");
 
     private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
@@ -129,96 +129,8 @@ public class XrayProcessor extends AbstractProcessor {
         classBuilder
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethods(buildConstructors(clazz))
-                .addMethods(buildSettersAndGetters(clazz));
-
-        final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
-                .addModifiers(Modifier.PRIVATE);
-        final MethodSpec.Builder initializerStaticBuilder = MethodSpec.methodBuilder("initializeStatic")
-                .addModifiers(Modifier.PRIVATE)
-                .addModifiers(Modifier.STATIC);
-
-        for (ClassDef.MethodDef methodDef : classDef.methods) {
-            String combinedMethodName = "_" + methodDef.name;
-            String argTypes = "";
-            String argNames = "";
-            for (ClassDef.ParameterDef parameterDef : methodDef.parameters) {
-                combinedMethodName += "_" + parameterDef.type.getSimpleName();
-                argTypes += ", " + parameterDef.type.getName() + ".class";
-                argNames += ", " + parameterDef.name;
-            }
-
-            if (methodDef.isStatic) {
-                initializerStaticBuilder
-                        .beginControlFlow("try")
-                        .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
-                                combinedMethodName, srcClassName, methodDef.name, argTypes)
-                        .addStatement("$N.setAccessible(true)", combinedMethodName)
-                        .endControlFlow("catch (Exception e) {}");
-            } else {
-                initializerBuilder
-                        .beginControlFlow("try")
-                        .addStatement("$N = $T.class.getDeclaredMethod($S$N)",
-                                combinedMethodName, srcClassName, methodDef.name, argTypes)
-                        .addStatement("$N.setAccessible(true)", combinedMethodName)
-                        .endControlFlow("catch (Exception e) {}");
-            }
-
-            MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(methodDef.name)
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(methodDef.returnType);
-
-            if (methodDef.isStatic) {
-                methodSpecBuilder
-                        .addModifiers(Modifier.STATIC);
-            }
-
-            for (ClassDef.ParameterDef parameterDef : methodDef.parameters) {
-                methodSpecBuilder
-                        .addParameter(parameterDef.type, parameterDef.name);
-            }
-
-            final String returnType = methodDef.returnType.getSimpleName();
-            final String returnTypeDefault = CLASS_DEFAULTS.containsKey(returnType) ?
-                    CLASS_DEFAULTS.get(returnType) : "null";
-
-            final String instance = methodDef.isStatic ? "null" : "mInstance";
-
-            if (methodDef.isStatic) {
-                methodSpecBuilder
-                        .addStatement("initializeStatic()");
-            }
-
-            if (!returnType.equals("void")) {
-                methodSpecBuilder
-                        .addStatement("$N result = $N", returnType, returnTypeDefault)
-                        .beginControlFlow("try")
-                        .addStatement("result = ($N) $N.invoke($N$N)",
-                                methodDef.returnType.getName(), combinedMethodName, instance, argNames)
-                        .endControlFlow("catch (Exception e) {}")
-                        .addStatement("return result");
-            } else {
-                methodSpecBuilder
-                        .beginControlFlow("try")
-                        .addStatement("$N.invoke($N$N)",
-                                combinedMethodName, instance, argNames)
-                        .endControlFlow("catch (Exception e) {}");
-            }
-
-            if (methodDef.isStatic) {
-                classBuilder
-                        .addField(Method.class, combinedMethodName, Modifier.PRIVATE, Modifier.STATIC);
-            } else {
-                classBuilder
-                        .addField(Method.class, combinedMethodName, Modifier.PRIVATE);
-            }
-
-            classBuilder
-                    .addMethod(methodSpecBuilder.build());
-        }
-
-        classBuilder
-                .addMethod(initializerBuilder.build())
-                .addMethod(initializerStaticBuilder.build());
+                .addMethods(buildSettersAndGetters(clazz))
+                .addMethods(buildMethods(clazz));
 
         return classBuilder.build();
     }
@@ -244,8 +156,7 @@ public class XrayProcessor extends AbstractProcessor {
                 parameterIndex++;
             }
 
-            builder.addStatement("mInstance = new $T($N)", clazz, combinedParameters)
-                    .addStatement("initialize()");
+            builder.addStatement("mInstance = new $T($N)", clazz, combinedParameters);
 
             methods.add(builder.build());
         }
@@ -286,6 +197,67 @@ public class XrayProcessor extends AbstractProcessor {
                     .endControlFlow("catch (Exception e) {}")
                     .addStatement("return result")
                     .build());
+        }
+
+        return methods;
+    }
+
+    private List<MethodSpec> buildMethods(Class clazz) {
+        final List<MethodSpec> methods = new ArrayList<>();
+
+        for (Method method : clazz.getDeclaredMethods()) {
+            final Class<?> returnType = method.getReturnType();
+            final String returnTypeDefault = getDefaultValue(returnType.getSimpleName());
+            final boolean hasReturn = !returnType.getSimpleName().equals("void");
+
+            final MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(method.getReturnType());
+
+            final boolean isStatic = (method.getModifiers() & java.lang.reflect.Modifier.STATIC) != 0;
+            if (isStatic) {
+                builder.addModifiers(Modifier.STATIC);
+            }
+
+            if (hasReturn) {
+                builder.addStatement("$T result = $N", returnType, returnTypeDefault);
+            }
+
+            int parameterIndex = 0;
+            String combinedParameters = "";
+            String combinedParameterTypes = "";
+            for (Class<?> parameterType : method.getParameterTypes()) {
+                final String parameterName = "param" + parameterIndex;
+                builder.addParameter(parameterType, parameterName);
+
+                combinedParameters += ", " + parameterName;
+                combinedParameterTypes += ", " + parameterType.getName() + ".class";
+
+                parameterIndex++;
+            }
+
+            builder
+                    .beginControlFlow("try")
+                    .addStatement("$T method = $T.class.getDeclaredMethod($S$N)",
+                            CLASS_NAME_METHOD, clazz, method.getName(), combinedParameterTypes)
+                    .addStatement("method.setAccessible(true)");
+
+            final String instance = isStatic ? "null" : "mInstance";
+
+            if (hasReturn) {
+                builder.addStatement("result = ($T) method.invoke($N$N)",
+                        returnType, instance, combinedParameters);
+            } else {
+                builder.addStatement("method.invoke(mInstance$N)", combinedParameters);
+            }
+
+            builder.endControlFlow("catch (Exception e) {}");
+
+            if (hasReturn) {
+                builder.addStatement("return result");
+            }
+
+            methods.add(builder.build());
         }
 
         return methods;
