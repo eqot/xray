@@ -166,12 +166,11 @@ public class XrayProcessor extends AbstractProcessor {
         final List<MethodSpec> methods = new ArrayList<>();
 
         for (Field field : clazz.getDeclaredFields()) {
-            final String fieldName = field.getName() + POSTFIX_OF_DST_CLASS;
             final Class<?> fieldType = field.getType();
-            final String fieldTypeDefault = getDefaultValue(field.getType().getSimpleName());
+            final String fieldTypeDefault = getDefaultValue(fieldType.getSimpleName());
 
             // Setter
-            methods.add(MethodSpec.methodBuilder(fieldName)
+            methods.add(MethodSpec.methodBuilder(field.getName())
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(fieldType, field.getName())
                     .beginControlFlow("try")
@@ -183,7 +182,7 @@ public class XrayProcessor extends AbstractProcessor {
                     .build());
 
             // Getter
-            methods.add(MethodSpec.methodBuilder(fieldName)
+            methods.add(MethodSpec.methodBuilder(field.getName())
                     .addModifiers(Modifier.PUBLIC)
                     .returns(field.getType())
                     .addStatement("$T result = $N", fieldType, fieldTypeDefault)

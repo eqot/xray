@@ -11,19 +11,19 @@ public class SampleTest {
     @Test
     public void constructorWithInt() throws Exception {
         final Sample$Xray sample = new Sample$Xray(123);
-        assertEquals(123, sample.mValue$Xray());
+        assertEquals(123, sample.mValue());
     }
 
     @Test
     public void constructorWithString() throws Exception {
         final Sample$Xray sample = new Sample$Xray("abc");
-        assertEquals("abc", sample.mString$Xray());
+        assertEquals("abc", sample.mString());
     }
 
     @Test
     public void addWithSetter() throws Exception {
         final Sample$Xray sample = new Sample$Xray(0);
-        sample.mValue$Xray(1);
+        sample.mValue(1);
         final int result = sample.add(2);
         assertEquals(3, result);
     }
