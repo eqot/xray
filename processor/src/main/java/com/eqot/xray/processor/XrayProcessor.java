@@ -111,26 +111,26 @@ public class XrayProcessor extends AbstractProcessor {
     }
 
     private TypeSpec buildClass(ClassName srcClassName, ClassName dstClassName) {
-        Class clazz = null;
-        try {
-            clazz = Class.forName(srcClassName.toString());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (clazz == null) {
-            return null;
-        }
+        final Class clazz = getClass(srcClassName.toString());
 
-        final TypeSpec.Builder classBuilder = TypeSpec.classBuilder(dstClassName.simpleName())
-                .addModifiers(Modifier.PUBLIC);
-
-        classBuilder
+        return TypeSpec.classBuilder(dstClassName.simpleName())
+                .addModifiers(Modifier.PUBLIC)
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethods(buildConstructors(clazz))
                 .addMethods(buildSettersAndGetters(clazz))
-                .addMethods(buildMethods(clazz));
+                .addMethods(buildMethods(clazz))
+                .build();
+    }
 
-        return classBuilder.build();
+    private Class getClass(String classNameString) {
+        Class clazz = null;
+        try {
+            clazz = Class.forName(classNameString);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return clazz;
     }
 
     private List<MethodSpec> buildConstructors(Class clazz) {
