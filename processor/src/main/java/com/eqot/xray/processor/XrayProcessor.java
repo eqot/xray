@@ -9,8 +9,10 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,7 +128,7 @@ public class XrayProcessor extends AbstractProcessor {
 
         classBuilder
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
-                .addMethods(buildConstructors(srcClassName, classDef))
+                .addMethods(buildConstructors(clazz))
                 .addMethods(buildSetterAndGetter(clazz));
 
         final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
@@ -221,29 +223,34 @@ public class XrayProcessor extends AbstractProcessor {
         return classBuilder.build();
     }
 
-    private List<MethodSpec> buildConstructors(ClassName srcClassName, ClassDef classDef) {
-        final List<MethodSpec> methodSpecs = new ArrayList<>();
-        for (ClassDef.MethodDef constructor : classDef.constructors) {
+    private List<MethodSpec> buildConstructors(Class clazz) {
+        final List<MethodSpec> methods = new ArrayList<>();
+
+        for (Constructor constructor : clazz.getDeclaredConstructors()) {
             final MethodSpec.Builder builder = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC);
 
+            int parameterIndex = 0;
             String combinedParameters = "";
-            for (ClassDef.ParameterDef parameterDef : constructor.parameters) {
-                builder.addParameter(parameterDef.type, parameterDef.name);
+            for (Class<?> parameterType : constructor.getParameterTypes()) {
+                final String parameterName = "param" + parameterIndex;
+                builder.addParameter(parameterType, parameterName);
 
-                if (!combinedParameters.equals("")) {
+                if (combinedParameters.length() > 0) {
                     combinedParameters += ", ";
                 }
-                combinedParameters += parameterDef.name;
+                combinedParameters += parameterName;
+
+                parameterIndex++;
             }
 
-            builder.addStatement("mInstance = new $T($N)", srcClassName, combinedParameters)
+            builder.addStatement("mInstance = new $T($N)", clazz, combinedParameters)
                     .addStatement("initialize()");
 
-            methodSpecs.add(builder.build());
+            methods.add(builder.build());
         }
 
-        return methodSpecs;
+        return methods;
     }
 
     private List<MethodSpec> buildSetterAndGetter(Class clazz) {
