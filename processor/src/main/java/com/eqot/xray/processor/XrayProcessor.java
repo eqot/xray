@@ -250,12 +250,24 @@ public class XrayProcessor extends AbstractProcessor {
         final List<MethodSpec> methods = new ArrayList<>();
 
         for (Field field : clazz.getDeclaredFields()) {
-            final String name = field.getName() + POSTFIX_OF_DST_CLASS;
+            final String fieldName = field.getName() + POSTFIX_OF_DST_CLASS;
             final Class<?> fieldType = field.getType();
             final String fieldTypeDefault = getDefaultValue(field.getType().getSimpleName());
 
+            // Setter
+            methods.add(MethodSpec.methodBuilder(fieldName)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(fieldType, field.getName())
+                    .beginControlFlow("try")
+                    .addStatement("$T field = mInstance.getClass().getDeclaredField($S)",
+                            CLASS_NAME_FIELD, field.getName())
+                    .addStatement("field.setAccessible(true)")
+                    .addStatement("field.set(mInstance, $N)", field.getName())
+                    .endControlFlow("catch (Exception e) {}")
+                    .build());
+
             // Getter
-            methods.add(MethodSpec.methodBuilder(name)
+            methods.add(MethodSpec.methodBuilder(fieldName)
                     .addModifiers(Modifier.PUBLIC)
                     .returns(field.getType())
                     .addStatement("$T result = $N", fieldType, fieldTypeDefault)

@@ -21,6 +21,14 @@ public class SampleTest {
     }
 
     @Test
+    public void addWithSetter() throws Exception {
+        final Sample$Xray sample = new Sample$Xray(0);
+        sample.mValue$Xray(1);
+        final int result = sample.add(2);
+        assertEquals(3, result);
+    }
+
+    @Test
     public void addWithMember() throws Exception {
         final Sample$Xray sample = new Sample$Xray(1);
         final int result = sample.add(2);
