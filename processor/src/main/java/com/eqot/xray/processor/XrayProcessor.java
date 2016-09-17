@@ -233,14 +233,14 @@ public class XrayProcessor extends AbstractProcessor {
                             CLASS_NAME_METHOD, clazz, method.getName(), combinedParameterTypes)
                     .addStatement("method.setAccessible(true)");
 
+            final String instance = isStatic ? "null" : "mInstance";
             if (hasReturn) {
-                final String instance = isStatic ? "null" : "mInstance";
                 builder.addStatement("result = ($T) method.invoke($N$N)",
                         returnType, instance, combinedParameters)
                         .endControlFlow("catch (Exception e) {}")
                         .addStatement("return result");
             } else {
-                builder.addStatement("method.invoke(mInstance$N)", combinedParameters)
+                builder.addStatement("method.invoke($N$N)", instance, combinedParameters)
                         .endControlFlow("catch (Exception e) {}");
             }
 
