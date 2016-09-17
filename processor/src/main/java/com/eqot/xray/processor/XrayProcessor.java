@@ -70,7 +70,7 @@ public class XrayProcessor extends AbstractProcessor {
             } catch (MirroredTypeException mte) {
                 className = ClassName.bestGuess(mte.getTypeMirror().toString());
             }
-            if (className == null || className.toString().equals("java.lang.Object")) {
+            if (className == null) {
                 continue;
             }
 
@@ -111,7 +111,13 @@ public class XrayProcessor extends AbstractProcessor {
     }
 
     private TypeSpec buildClass(ClassName srcClassName, ClassName dstClassName) {
-        final Class clazz = getClass(srcClassName.toString());
+        final Class clazz;
+        try {
+            clazz = Class.forName(srcClassName.toString());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         return TypeSpec.classBuilder(dstClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC)
@@ -120,17 +126,6 @@ public class XrayProcessor extends AbstractProcessor {
                 .addMethods(buildSettersAndGetters(clazz))
                 .addMethods(buildMethods(clazz))
                 .build();
-    }
-
-    private Class getClass(String classNameString) {
-        Class clazz = null;
-        try {
-            clazz = Class.forName(classNameString);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        return clazz;
     }
 
     private List<MethodSpec> buildConstructors(Class clazz) {
