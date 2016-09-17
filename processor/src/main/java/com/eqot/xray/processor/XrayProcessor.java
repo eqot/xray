@@ -129,7 +129,7 @@ public class XrayProcessor extends AbstractProcessor {
         classBuilder
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethods(buildConstructors(clazz))
-                .addMethods(buildSetterAndGetter(clazz));
+                .addMethods(buildSettersAndGetters(clazz));
 
         final MethodSpec.Builder initializerBuilder = MethodSpec.methodBuilder("initialize")
                 .addModifiers(Modifier.PRIVATE);
@@ -253,7 +253,7 @@ public class XrayProcessor extends AbstractProcessor {
         return methods;
     }
 
-    private List<MethodSpec> buildSetterAndGetter(Class clazz) {
+    private List<MethodSpec> buildSettersAndGetters(Class clazz) {
         final List<MethodSpec> methods = new ArrayList<>();
 
         for (Field field : clazz.getDeclaredFields()) {
