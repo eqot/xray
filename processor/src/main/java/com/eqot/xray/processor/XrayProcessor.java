@@ -121,8 +121,6 @@ public class XrayProcessor extends AbstractProcessor {
             return null;
         }
 
-        final ClassDef classDef = new ClassDef(srcClassName.toString());
-
         final TypeSpec.Builder classBuilder = TypeSpec.classBuilder(dstClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC);
 
