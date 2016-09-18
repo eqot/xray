@@ -165,16 +165,15 @@ public class XrayProcessor extends AbstractProcessor {
 
         for (Field field : clazz.getDeclaredFields()) {
             final Class<?> fieldType = field.getType();
-            final String fieldTypeDefault = getDefaultValue(fieldType.getSimpleName());
+//            final String fieldTypeDefault = getDefaultValue(fieldType.getSimpleName());
 
             // Setter
             methods.add(MethodSpec.methodBuilder(field.getName())
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(fieldType, PREFIX_OF_PARAMETER)
+
                     .beginControlFlow("try")
-                    .addStatement("$T field = $T.class.getDeclaredField($S)",
-                            CLASS_NAME_FIELD, clazz, field.getName())
-                    .addStatement("field.setAccessible(true)")
+                    .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
                     .addStatement("field.set(mInstance, $N)", PREFIX_OF_PARAMETER)
                     .endControlFlow("catch (Exception e) {}")
                     .build());
@@ -183,14 +182,9 @@ public class XrayProcessor extends AbstractProcessor {
             methods.add(MethodSpec.methodBuilder(field.getName())
                     .addModifiers(Modifier.PUBLIC)
                     .returns(field.getType())
-                    .addStatement("$T result = $N", fieldType, fieldTypeDefault)
-                    .beginControlFlow("try")
-                    .addStatement("$T field = $T.class.getDeclaredField($S)",
-                            CLASS_NAME_FIELD, clazz, field.getName())
-                    .addStatement("field.setAccessible(true)")
-                    .addStatement("result = ($T) field.get(mInstance)", fieldType)
-                    .endControlFlow("catch (Exception e) {}")
-                    .addStatement("return result")
+
+                    .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
+                    .addStatement("return ($T) getObject(field, mInstance)", fieldType)
                     .build());
         }
 
@@ -254,6 +248,34 @@ public class XrayProcessor extends AbstractProcessor {
         final ParameterSpec paramTypesSpec = ParameterSpec.builder(Class[].class, "paramTypes")
                 .build();
         final ParameterSpec paramsSpec = ParameterSpec.builder(Object[].class, "params").build();
+
+        // getField()
+        methods.add(MethodSpec.methodBuilder("getField")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addParameter(String.class, "fieldName")
+                .returns(CLASS_NAME_FIELD)
+
+                .addStatement("$T field = null", CLASS_NAME_FIELD)
+                .beginControlFlow("try")
+                .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz)
+                .addStatement("field.setAccessible(true)")
+                .endControlFlow("catch (Exception e) {}")
+                .addStatement("return field")
+                .build());
+
+        // getObject()
+        methods.add(MethodSpec.methodBuilder("getObject")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addParameter(Field.class, "field")
+                .addParameter(clazz, "instance")
+                .returns(Object.class)
+
+                .addStatement("$T result = null", Object.class)
+                .beginControlFlow("try")
+                .addStatement("result = field.get(instance)")
+                .endControlFlow("catch (Exception e) {}")
+                .addStatement("return result")
+                .build());
 
         // getMethod()
         methods.add(MethodSpec.methodBuilder("getMethod")
