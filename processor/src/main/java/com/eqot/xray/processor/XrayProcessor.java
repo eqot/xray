@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -126,6 +127,7 @@ public class XrayProcessor extends AbstractProcessor {
                 .addMethods(buildConstructors(clazz))
                 .addMethods(buildSettersAndGetters(clazz))
                 .addMethods(buildMethods(clazz))
+                .addMethods(buildUtilityMethods(clazz))
                 .build();
     }
 
@@ -200,7 +202,7 @@ public class XrayProcessor extends AbstractProcessor {
 
         for (Method method : clazz.getDeclaredMethods()) {
             final Class<?> returnType = method.getReturnType();
-            final String returnTypeDefault = getDefaultValue(returnType.getSimpleName());
+//            final String returnTypeDefault = getDefaultValue(returnType.getSimpleName());
 
             final MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
                     .addModifiers(Modifier.PUBLIC)
@@ -212,9 +214,9 @@ public class XrayProcessor extends AbstractProcessor {
             }
 
             final boolean hasReturn = !returnType.getSimpleName().equals("void");
-            if (hasReturn) {
-                builder.addStatement("$T result = $N", returnType, returnTypeDefault);
-            }
+//            if (hasReturn) {
+//                builder.addStatement("$T result = $N", returnType, returnTypeDefault);
+//            }
 
             int parameterIndex = 0;
             String combinedParameters = "";
@@ -229,24 +231,59 @@ public class XrayProcessor extends AbstractProcessor {
                 parameterIndex++;
             }
 
-            builder.beginControlFlow("try")
-                    .addStatement("$T method = $T.class.getDeclaredMethod($S$N)",
-                            CLASS_NAME_METHOD, clazz, method.getName(), combinedParameterTypes)
-                    .addStatement("method.setAccessible(true)");
+            builder.addStatement("$T method = getMethod($S$N)",
+                            CLASS_NAME_METHOD, method.getName(), combinedParameterTypes);
 
             final String instance = isStatic ? "null" : "mInstance";
             if (hasReturn) {
-                builder.addStatement("result = ($T) method.invoke($N$N)",
-                        returnType, instance, combinedParameters)
-                        .endControlFlow("catch (Exception e) {}")
-                        .addStatement("return result");
+                builder.addStatement("return ($T) invokeMethod(method, $N$N)",
+                        returnType, instance, combinedParameters);
             } else {
-                builder.addStatement("method.invoke($N$N)", instance, combinedParameters)
-                        .endControlFlow("catch (Exception e) {}");
+                builder.addStatement("invokeMethod(method, $N$N)", instance, combinedParameters);
             }
 
             methods.add(builder.build());
         }
+
+        return methods;
+    }
+
+    private List<MethodSpec> buildUtilityMethods(Class clazz) {
+        final List<MethodSpec> methods = new ArrayList<>();
+
+        final ParameterSpec paramTypesSpec = ParameterSpec.builder(Class[].class, "paramTypes")
+                .build();
+        final ParameterSpec paramsSpec = ParameterSpec.builder(Object[].class, "params").build();
+
+        // getMethod()
+        methods.add(MethodSpec.methodBuilder("getMethod")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addParameter(String.class, "methodName")
+                .addParameter(paramTypesSpec).varargs(true)
+                .returns(CLASS_NAME_METHOD)
+
+                .addStatement("$T method = null", CLASS_NAME_METHOD)
+                .beginControlFlow("try")
+                .addStatement("method = $T.class.getDeclaredMethod(methodName, paramTypes)", clazz)
+                .addStatement("method.setAccessible(true)")
+                .endControlFlow("catch (Exception e) {}")
+                .addStatement("return method")
+                .build());
+
+        // invokeMethod()
+        methods.add(MethodSpec.methodBuilder("invokeMethod")
+                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addParameter(CLASS_NAME_METHOD, "method")
+                .addParameter(clazz, "instance")
+                .addParameter(paramsSpec).varargs(true)
+                .returns(Object.class)
+
+                .addStatement("$T result = null", Object.class)
+                .beginControlFlow("try")
+                .addStatement("result = method.invoke(instance, params)")
+                .endControlFlow("catch (Exception e) {}")
+                .addStatement("return result")
+                .build());
 
         return methods;
     }
