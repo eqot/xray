@@ -9,6 +9,6 @@ public class SampleAndroid {
         mContext = context;
     }
 
-    public String nop(String value) { return value; }
-    public String nop(Context context, String value) { return value; }
+    private String nop(String value) { return value; }
+    private String nop(Context context, String value) { return value; }
 }
