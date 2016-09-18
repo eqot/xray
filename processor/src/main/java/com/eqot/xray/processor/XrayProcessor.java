@@ -170,8 +170,8 @@ public class XrayProcessor extends AbstractProcessor {
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(fieldType, PREFIX_OF_PARAMETER)
                     .beginControlFlow("try")
-                    .addStatement("$T field = mInstance.getClass().getDeclaredField($S)",
-                            CLASS_NAME_FIELD, field.getName())
+                    .addStatement("$T field = $T.class.getDeclaredField($S)",
+                            CLASS_NAME_FIELD, clazz, field.getName())
                     .addStatement("field.setAccessible(true)")
                     .addStatement("field.set(mInstance, $N)", PREFIX_OF_PARAMETER)
                     .endControlFlow("catch (Exception e) {}")
@@ -183,8 +183,8 @@ public class XrayProcessor extends AbstractProcessor {
                     .returns(field.getType())
                     .addStatement("$T result = $N", fieldType, fieldTypeDefault)
                     .beginControlFlow("try")
-                    .addStatement("$T field = mInstance.getClass().getDeclaredField($S)",
-                            CLASS_NAME_FIELD, field.getName())
+                    .addStatement("$T field = $T.class.getDeclaredField($S)",
+                            CLASS_NAME_FIELD, clazz, field.getName())
                     .addStatement("field.setAccessible(true)")
                     .addStatement("result = ($T) field.get(mInstance)", fieldType)
                     .endControlFlow("catch (Exception e) {}")
