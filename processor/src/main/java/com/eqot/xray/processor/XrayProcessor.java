@@ -206,7 +206,7 @@ public class XrayProcessor extends AbstractProcessor {
                     .addModifiers(Modifier.PUBLIC)
                     .returns(method.getReturnType());
 
-            final boolean isStatic = (method.getModifiers() & java.lang.reflect.Modifier.STATIC) != 0;
+            final boolean isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
             if (isStatic) {
                 builder.addModifiers(Modifier.STATIC);
             }
