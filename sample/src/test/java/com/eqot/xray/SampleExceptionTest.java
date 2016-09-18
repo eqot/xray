@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 @Xray(SampleException.class)
 public class SampleExceptionTest {
     @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void throwException() throws Exception {

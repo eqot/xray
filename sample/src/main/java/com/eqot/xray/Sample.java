@@ -1,5 +1,6 @@
 package com.eqot.xray;
 
+@SuppressWarnings("ALL")
 public class Sample {
     private int mValue;
     private String mString;

@@ -1,7 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'com.novoda.bintray-release'
 
+//noinspection GroovyUnusedAssignment
 sourceCompatibility = rootProject.ext.sourceCompatibilityVersion
+//noinspection GroovyUnusedAssignment
 targetCompatibility = rootProject.ext.targetCompatibilityVersion
 
 dependencies {

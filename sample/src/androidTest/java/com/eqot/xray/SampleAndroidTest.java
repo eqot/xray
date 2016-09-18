@@ -22,6 +22,7 @@ public class SampleAndroidTest {
 
     @After
     public void tearDown() throws Exception {
+        mContext = null;
     }
 
     @Test

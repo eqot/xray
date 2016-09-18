@@ -95,6 +95,9 @@ public class XrayProcessor extends AbstractProcessor {
                 srcClassName.simpleName() + POSTFIX_OF_DST_CLASS);
 
         final TypeSpec dstClass = buildClass(srcClassName, dstClassName);
+        if (dstClass == null) {
+            return;
+        }
 
         try {
             final JavaFileObject source = processingEnv.getFiler().createSourceFile(
@@ -321,6 +324,7 @@ public class XrayProcessor extends AbstractProcessor {
         return CLASS_DEFAULTS.containsKey(className) ? CLASS_DEFAULTS.get(className) : "null";
     }
 
+    @SuppressWarnings("unused")
     private void log(String message) {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
     }

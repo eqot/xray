@@ -2,6 +2,7 @@ package com.eqot.xray;
 
 import android.content.Context;
 
+@SuppressWarnings("ALL")
 public class SampleAndroid {
     private final Context mContext;
 

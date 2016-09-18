@@ -1,5 +1,6 @@
 package com.eqot.xray;
 
+@SuppressWarnings("ALL")
 public class SampleStatic {
     private static int mValue;
 
