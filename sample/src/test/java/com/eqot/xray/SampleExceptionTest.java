@@ -15,7 +15,7 @@ public class SampleExceptionTest {
 
     @Test
     public void throwException() throws Exception {
-        SampleException$Xray sample = new SampleException$Xray();
+        final SampleException$Xray sample = new SampleException$Xray();
 
         thrown.expect(Exception.class);
         thrown.expectMessage(nullValue(String.class));
@@ -25,7 +25,7 @@ public class SampleExceptionTest {
 
     @Test
     public void throwIllegalArgumentException() throws Exception {
-        SampleException$Xray sample = new SampleException$Xray();
+        final SampleException$Xray sample = new SampleException$Xray();
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("message");
