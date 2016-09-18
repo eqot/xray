@@ -77,7 +77,8 @@ public class SampleTest {
 The private field is also accessible.
 
 ```
-public void add() throws Exception {
+@Test
+public void setAndGet() throws Exception {
     final Sample$Xray sample = new Sample$Xray();
     sample.mValue(123);
     assertEquals(123, sample.mValue());
