@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,7 +166,6 @@ public class XrayProcessor extends AbstractProcessor {
 
         for (Field field : clazz.getDeclaredFields()) {
             final Class<?> fieldType = field.getType();
-//            final String fieldTypeDefault = getDefaultValue(fieldType.getSimpleName());
 
             final boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
             final List<Modifier> modifiers = new ArrayList<Modifier>() {{ add(Modifier.PUBLIC); }};
@@ -203,21 +203,17 @@ public class XrayProcessor extends AbstractProcessor {
 
         for (Method method : clazz.getDeclaredMethods()) {
             final Class<?> returnType = method.getReturnType();
-//            final String returnTypeDefault = getDefaultValue(returnType.getSimpleName());
+            final String returnTypeDefault = getDefaultValue(returnType.getSimpleName());
 
             final MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(method.getReturnType());
+                    .returns(method.getReturnType())
+                    .addException(Exception.class);
 
             final boolean isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
             if (isStatic) {
                 builder.addModifiers(Modifier.STATIC);
             }
-
-            final boolean hasReturn = !returnType.getSimpleName().equals("void");
-//            if (hasReturn) {
-//                builder.addStatement("$T result = $N", returnType, returnTypeDefault);
-//            }
 
             int parameterIndex = 0;
             String combinedParameters = "";
@@ -236,11 +232,31 @@ public class XrayProcessor extends AbstractProcessor {
                             CLASS_NAME_METHOD, method.getName(), combinedParameterTypes);
 
             final String instance = isStatic ? "null" : "mInstance";
+            final boolean hasReturn = !returnType.getSimpleName().equals("void");
             if (hasReturn) {
-                builder.addStatement("return ($T) invokeMethod(method, $N$N)",
-                        returnType, instance, combinedParameters);
+                builder.addStatement("$T result = $N", returnType, returnTypeDefault)
+                        .beginControlFlow("try")
+                        .addStatement("result = ($T) method.invoke($N$N)",
+                                returnType, instance, combinedParameters)
+                        .endControlFlow();
             } else {
-                builder.addStatement("invokeMethod(method, $N$N)", instance, combinedParameters);
+                builder.beginControlFlow("try")
+                        .addStatement("method.invoke($N$N)", instance, combinedParameters)
+                        .endControlFlow();
+            }
+
+            builder.beginControlFlow("catch ($T e)", InvocationTargetException.class)
+                    .addStatement("Throwable cause = e.getCause()");
+            for (Class<?> exception : method.getExceptionTypes()) {
+                builder.beginControlFlow("if (cause instanceof $T)", exception)
+                        .addStatement("throw new $T(cause.getMessage())", exception)
+                        .endControlFlow()
+                        .addException(exception);
+            }
+            builder.endControlFlow();
+
+            if (hasReturn) {
+                builder.addStatement("return result");
             }
 
             methods.add(builder.build());
@@ -254,7 +270,6 @@ public class XrayProcessor extends AbstractProcessor {
 
         final ParameterSpec paramTypesSpec = ParameterSpec.builder(Class[].class, "paramTypes")
                 .build();
-        final ParameterSpec paramsSpec = ParameterSpec.builder(Object[].class, "params").build();
 
         // getField()
         methods.add(MethodSpec.methodBuilder("getField")
@@ -297,21 +312,6 @@ public class XrayProcessor extends AbstractProcessor {
                 .addStatement("method.setAccessible(true)")
                 .endControlFlow("catch (Exception e) {}")
                 .addStatement("return method")
-                .build());
-
-        // invokeMethod()
-        methods.add(MethodSpec.methodBuilder("invokeMethod")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .addParameter(CLASS_NAME_METHOD, "method")
-                .addParameter(clazz, "instance")
-                .addParameter(paramsSpec).varargs(true)
-                .returns(Object.class)
-
-                .addStatement("$T result = null", Object.class)
-                .beginControlFlow("try")
-                .addStatement("result = method.invoke(instance, params)")
-                .endControlFlow("catch (Exception e) {}")
-                .addStatement("return result")
                 .build());
 
         return methods;
