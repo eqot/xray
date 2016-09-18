@@ -3,7 +3,7 @@
 [![Download](https://api.bintray.com/packages/eqot/maven/xray-processor/images/download.svg)](https://bintray.com/eqot/maven/xray/_latestVersion)
 [![Apache2](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-An annotation which makes class methods accessible for testing.
+An annotation which makes class methods and fields accessible for testing.
 
 ## Download
 
@@ -37,21 +37,29 @@ dependencies {
 }
 ```
 
+Please note that since this annotation breaks class's information hiding,
+it is strongly recommended for testing only.
+
 ## Examples
 
-Here is an example of a private method ```Sample#add()```
-which needs to be verified if it works as expected.
+Here is an example of private methods and a field
+which need to be verified if it works as expected.
 
 ```
 public class Sample {
+    private int mValue;
+
     private int add(int value0, int value1) {
         return value0 + value1;
+    }
+
+    private void throwIllegalArgumentException() throws IllegalArgumentException {
+        throw new IllegalArgumentException("message");
     }
 }
 ```
 
-The annotation ```@Xray``` generates a wrapper class for the specified class with a postfix,
-```Sample$Xray``` in this case.
+The annotation ```@Xray``` generates a wrapper class for the specified class with a postfix, ```Sample$Xray``` in this case.
 The generated wrapper has the same methods as the specified class but all methods are accessible as public methods.
 
 ```
@@ -63,6 +71,33 @@ public class SampleTest {
         final int result = sample.add(1, 2);
         assertEquals(3, result);
     }
+}
+```
+
+The private field is also accessible.
+
+```
+public void add() throws Exception {
+    final Sample$Xray sample = new Sample$Xray();
+    sample.mValue(123);
+    assertEquals(123, sample.mValue());
+}
+```
+
+Here is an example with JUnit4 to verify if exception occurs as expected.
+
+```
+@Rule
+public final ExpectedException thrown = ExpectedException.none();
+
+@Test
+public void throwIllegalArgumentException() throws Exception {
+    final Sample$Xray sample = new Sample$Xray();
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("message");
+
+    sample.throwIllegalArgumentException();
 }
 ```
 
