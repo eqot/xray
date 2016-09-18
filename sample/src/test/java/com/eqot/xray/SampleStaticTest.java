@@ -13,4 +13,18 @@ public class SampleStaticTest {
         final int result = SampleStatic$Xray.add(1, 2);
         assertEquals(3, result);
     }
+
+    @Test
+    public void addWithMember() throws Exception {
+        SampleStatic$Xray.mValue(1);
+        final int result = SampleStatic$Xray.addWithMember(2);
+        assertEquals(3, result);
+    }
+
+    @Test
+    public void getMember() throws Exception {
+        SampleStatic$Xray.mValue(123);
+        final int result = SampleStatic$Xray.mValue();
+        assertEquals(123, result);
+    }
 }

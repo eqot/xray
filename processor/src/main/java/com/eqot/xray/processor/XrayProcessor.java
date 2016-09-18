@@ -167,24 +167,31 @@ public class XrayProcessor extends AbstractProcessor {
             final Class<?> fieldType = field.getType();
 //            final String fieldTypeDefault = getDefaultValue(fieldType.getSimpleName());
 
+            final boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
+            final List<Modifier> modifiers = new ArrayList<Modifier>() {{ add(Modifier.PUBLIC); }};
+            if (isStatic) {
+                modifiers.add(Modifier.STATIC);
+            }
+            final String instance = isStatic ? "null" : "mInstance";
+
             // Setter
             methods.add(MethodSpec.methodBuilder(field.getName())
-                    .addModifiers(Modifier.PUBLIC)
+                    .addModifiers(modifiers)
                     .addParameter(fieldType, PREFIX_OF_PARAMETER)
 
                     .beginControlFlow("try")
                     .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
-                    .addStatement("field.set(mInstance, $N)", PREFIX_OF_PARAMETER)
+                    .addStatement("field.set($N, $N)", instance, PREFIX_OF_PARAMETER)
                     .endControlFlow("catch (Exception e) {}")
                     .build());
 
             // Getter
             methods.add(MethodSpec.methodBuilder(field.getName())
-                    .addModifiers(Modifier.PUBLIC)
+                    .addModifiers(modifiers)
                     .returns(field.getType())
 
                     .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
-                    .addStatement("return ($T) getObject(field, mInstance)", fieldType)
+                    .addStatement("return ($T) getObject(field, $N)", fieldType, instance)
                     .build());
         }
 
