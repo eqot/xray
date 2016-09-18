@@ -37,6 +37,7 @@ import javax.tools.JavaFileObject;
 public class XrayProcessor extends AbstractProcessor {
     private static final String POSTFIX_OF_DST_PACKAGE = ".xray";
     private static final String POSTFIX_OF_DST_CLASS = "$Xray";
+    private static final String PREFIX_OF_PARAMETER = "param";
 
     private static final ClassName CLASS_NAME_METHOD = ClassName.bestGuess("java.lang.reflect.Method");
     private static final ClassName CLASS_NAME_FIELD = ClassName.bestGuess("java.lang.reflect.Field");
@@ -138,7 +139,7 @@ public class XrayProcessor extends AbstractProcessor {
             int parameterIndex = 0;
             String combinedParameters = "";
             for (Class<?> parameterType : constructor.getParameterTypes()) {
-                final String parameterName = "param" + parameterIndex;
+                final String parameterName = PREFIX_OF_PARAMETER + parameterIndex;
                 builder.addParameter(parameterType, parameterName);
 
                 if (combinedParameters.length() > 0) {
@@ -167,12 +168,12 @@ public class XrayProcessor extends AbstractProcessor {
             // Setter
             methods.add(MethodSpec.methodBuilder(field.getName())
                     .addModifiers(Modifier.PUBLIC)
-                    .addParameter(fieldType, field.getName())
+                    .addParameter(fieldType, PREFIX_OF_PARAMETER)
                     .beginControlFlow("try")
                     .addStatement("$T field = mInstance.getClass().getDeclaredField($S)",
                             CLASS_NAME_FIELD, field.getName())
                     .addStatement("field.setAccessible(true)")
-                    .addStatement("field.set(mInstance, $N)", field.getName())
+                    .addStatement("field.set(mInstance, $N)", PREFIX_OF_PARAMETER)
                     .endControlFlow("catch (Exception e) {}")
                     .build());
 
