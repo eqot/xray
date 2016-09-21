@@ -41,9 +41,6 @@ public class XrayProcessor extends AbstractProcessor {
     private static final String POSTFIX_OF_DST_CLASS = "$Xray";
     private static final String PREFIX_OF_PARAMETER = "param";
 
-    private static final ClassName CLASS_NAME_METHOD = ClassName.bestGuess("java.lang.reflect.Method");
-    private static final ClassName CLASS_NAME_FIELD = ClassName.bestGuess("java.lang.reflect.Field");
-
     private static final Map<String, String> CLASS_DEFAULTS = new HashMap<String, String>() {
         {
             put("boolean", "false");
@@ -183,7 +180,7 @@ public class XrayProcessor extends AbstractProcessor {
                     .addParameter(fieldType, PREFIX_OF_PARAMETER)
 
                     .beginControlFlow("try")
-                    .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
+                    .addStatement("$T field = getField($S)", Field.class, field.getName())
                     .addStatement("field.set($N, $N)", instance, PREFIX_OF_PARAMETER)
                     .endControlFlow("catch (Exception e) {}")
                     .build());
@@ -193,7 +190,7 @@ public class XrayProcessor extends AbstractProcessor {
                     .addModifiers(modifiers)
                     .returns(field.getType())
 
-                    .addStatement("$T field = getField($S)", CLASS_NAME_FIELD, field.getName())
+                    .addStatement("$T field = getField($S)", Field.class, field.getName())
                     .addStatement("return ($T) getObject(field, $N)", fieldType, instance)
                     .build());
         }
@@ -232,7 +229,7 @@ public class XrayProcessor extends AbstractProcessor {
             }
 
             builder.addStatement("$T method = getMethod($S$N)",
-                            CLASS_NAME_METHOD, method.getName(), combinedParameterTypes);
+                            Method.class, method.getName(), combinedParameterTypes);
 
             final String instance = isStatic ? "null" : "mInstance";
             final boolean hasReturn = !returnType.getSimpleName().equals("void");
@@ -278,9 +275,9 @@ public class XrayProcessor extends AbstractProcessor {
         methods.add(MethodSpec.methodBuilder("getField")
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
                 .addParameter(String.class, "fieldName")
-                .returns(CLASS_NAME_FIELD)
+                .returns(Field.class)
 
-                .addStatement("$T field = null", CLASS_NAME_FIELD)
+                .addStatement("$T field = null", Field.class)
                 .beginControlFlow("try")
                 .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz)
                 .addStatement("field.setAccessible(true)")
@@ -307,9 +304,9 @@ public class XrayProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
                 .addParameter(String.class, "methodName")
                 .addParameter(paramTypesSpec).varargs(true)
-                .returns(CLASS_NAME_METHOD)
+                .returns(Method.class)
 
-                .addStatement("$T method = null", CLASS_NAME_METHOD)
+                .addStatement("$T method = null", Method.class)
                 .beginControlFlow("try")
                 .addStatement("method = $T.class.getDeclaredMethod(methodName, paramTypes)", clazz)
                 .addStatement("method.setAccessible(true)")
