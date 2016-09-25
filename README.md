@@ -5,6 +5,17 @@
 
 An annotation which makes class methods and fields accessible for testing.
 
+
+## Motivation
+
+When I developed an Android library, I encountered a problem that an private method in a class cannot be tested since it is not accessible from outside of the class including test code.
+According to [a thread in StackOverflow](http://stackoverflow.com/questions/34571/how-to-test-a-class-that-has-private-methods-fields-or-inner-classes),
+the problem seems to be an well-known topic and one of solutions is reflection.
+Reflection is quite powerful but decrease readability and maintainability of test code.
+
+So, this annoation is developed to make private methods accessible by using reflection but keep readability and maintainability.
+
+
 ## Download
 
 Gradle:
@@ -39,6 +50,7 @@ dependencies {
 
 Please note that since this annotation breaks class's information hiding,
 it is strongly recommended for testing only.
+
 
 ## Examples
 
@@ -101,6 +113,7 @@ public void throwIllegalArgumentException() throws Exception {
     sample.throwIllegalArgumentException();
 }
 ```
+
 
 ## LICENSE
 
