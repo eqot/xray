@@ -13,7 +13,7 @@ According to [a thread in StackOverflow](http://stackoverflow.com/questions/3457
 the problem seems to be an well-known topic and one of solutions is reflection.
 Reflection is quite powerful but decrease readability and maintainability of test code.
 
-So, this annoation is developed to make private methods accessible by using reflection but keep readability and maintainability.
+So, this annotation is developed to make private methods accessible by using reflection but keep readability and maintainability.
 
 
 ## Download
