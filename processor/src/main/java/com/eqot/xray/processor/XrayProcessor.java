@@ -124,6 +124,7 @@ public class XrayProcessor extends AbstractProcessor {
 
         return TypeSpec.classBuilder(dstClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC)
+                .superclass(clazz.getSuperclass())
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethods(buildConstructors(clazz))
                 .addMethods(buildSettersAndGetters(clazz))
