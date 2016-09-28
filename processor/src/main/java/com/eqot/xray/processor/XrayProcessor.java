@@ -122,15 +122,20 @@ public class XrayProcessor extends AbstractProcessor {
             return null;
         }
 
-        return TypeSpec.classBuilder(dstClassName.simpleName())
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(dstClassName.simpleName())
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(clazz.getSuperclass())
                 .addField(srcClassName, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
                 .addMethods(buildConstructors(clazz))
                 .addMethods(buildSettersAndGetters(clazz))
                 .addMethods(buildMethods(clazz))
-                .addMethods(buildUtilityMethods(clazz))
-                .build();
+                .addMethods(buildUtilityMethods(clazz));
+
+        for (Class superinterface : clazz.getInterfaces()) {
+            builder.addSuperinterface(superinterface);
+        }
+
+        return builder.build();
     }
 
     private List<MethodSpec> buildConstructors(Class clazz) {
@@ -208,8 +213,7 @@ public class XrayProcessor extends AbstractProcessor {
 
             final MethodSpec.Builder builder = MethodSpec.methodBuilder(method.getName())
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(method.getReturnType())
-                    .addException(Exception.class);
+                    .returns(method.getReturnType());
 
             final boolean isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
             if (isStatic) {
@@ -255,6 +259,9 @@ public class XrayProcessor extends AbstractProcessor {
                         .addException(exception);
             }
             builder.endControlFlow();
+
+            builder.beginControlFlow("catch ($T e)", IllegalAccessException.class)
+                    .endControlFlow();
 
             if (hasReturn) {
                 builder.addStatement("return result");
