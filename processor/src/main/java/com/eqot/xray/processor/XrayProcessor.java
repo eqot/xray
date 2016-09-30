@@ -135,6 +135,36 @@ public class XrayProcessor extends AbstractProcessor {
             builder.addSuperinterface(superinterface);
         }
 
+        for (Class innerClass : clazz.getDeclaredClasses()) {
+            log(innerClass.getCanonicalName());
+//            TypeSpec typeSpec = buildClass(innerClass);
+//            builder.addType(typeSpec);
+        }
+
+        return builder.build();
+    }
+
+    private TypeSpec buildClass(Class clazz) {
+        final TypeSpec.Builder builder = TypeSpec.classBuilder(clazz.getSimpleName())
+                .addModifiers(Modifier.PUBLIC)
+                .superclass(clazz.getSuperclass())
+                .addField(clazz, "mInstance", Modifier.PRIVATE)
+//                .addField(clazz, "mInstance", Modifier.PRIVATE, Modifier.FINAL)
+//                .addMethods(buildConstructors(clazz))
+                .addMethods(buildSettersAndGetters(clazz))
+                .addMethods(buildMethods(clazz))
+                .addMethods(buildUtilityMethods(clazz, false));
+
+        for (Class superinterface : clazz.getInterfaces()) {
+            builder.addSuperinterface(superinterface);
+        }
+
+//        for (Class innerClass : clazz.getDeclaredClasses()) {
+//            ClassName className = ClassName.bestGuess(innerClass.getCanonicalName());
+//            TypeSpec typeSpec = buildClass(className, className);
+//            builder.addType(typeSpec);
+//        }
+
         return builder.build();
     }
 
@@ -274,14 +304,22 @@ public class XrayProcessor extends AbstractProcessor {
     }
 
     private List<MethodSpec> buildUtilityMethods(Class clazz) {
+        return buildUtilityMethods(clazz, true);
+    }
+    private List<MethodSpec> buildUtilityMethods(Class clazz, boolean isStatic) {
         final List<MethodSpec> methods = new ArrayList<>();
 
         final ParameterSpec paramTypesSpec = ParameterSpec.builder(Class[].class, "paramTypes")
                 .build();
 
+        final List<Modifier> modifiers = new ArrayList<Modifier>() {{ add(Modifier.PRIVATE); }};
+        if (isStatic) {
+            modifiers.add(Modifier.STATIC);
+        }
+
         // getField()
         methods.add(MethodSpec.methodBuilder("getField")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addModifiers(modifiers)
                 .addParameter(String.class, "fieldName")
                 .returns(Field.class)
 
@@ -295,7 +333,7 @@ public class XrayProcessor extends AbstractProcessor {
 
         // getObject()
         methods.add(MethodSpec.methodBuilder("getObject")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addModifiers(modifiers)
                 .addParameter(Field.class, "field")
                 .addParameter(clazz, "instance")
                 .returns(Object.class)
@@ -309,7 +347,7 @@ public class XrayProcessor extends AbstractProcessor {
 
         // getMethod()
         methods.add(MethodSpec.methodBuilder("getMethod")
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                .addModifiers(modifiers)
                 .addParameter(String.class, "methodName")
                 .addParameter(paramTypesSpec).varargs(true)
                 .returns(Method.class)
