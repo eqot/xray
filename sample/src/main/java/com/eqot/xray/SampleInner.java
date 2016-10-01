@@ -2,7 +2,7 @@ package com.eqot.xray;
 
 public class SampleInner {
     public class InnerClass {
-        public int addInner(int value0, int value1) {
+        private int addInner(int value0, int value1) {
             return value0 + value1;
         }
     }
