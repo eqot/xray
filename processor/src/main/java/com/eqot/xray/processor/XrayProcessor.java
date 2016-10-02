@@ -204,6 +204,9 @@ public class XrayProcessor extends AbstractProcessor {
             final Class<?> fieldType = field.getType();
 
             if (java.lang.reflect.Modifier.isPrivate(fieldType.getModifiers())) {
+                warn("Skip over generating setter and getter of \"" +
+                        fieldType.getSimpleName() + " " + field.getName() +
+                        "\" since it cannot be accessible");
                 break;
             }
 
@@ -374,5 +377,9 @@ public class XrayProcessor extends AbstractProcessor {
     @SuppressWarnings("unused")
     private void log(String message) {
         processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
+    }
+
+    private void warn(String message) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
     }
 }
