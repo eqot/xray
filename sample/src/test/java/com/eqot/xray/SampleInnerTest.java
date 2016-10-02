@@ -14,9 +14,9 @@ public class SampleInnerTest {
 //    }
 
     @Test
-    public void addInner() throws Exception {
+    public void addPublicInner() throws Exception {
         final SampleInner$Xray sample = new SampleInner$Xray();
-        final int result = sample.addInner(1, 2);
+        final int result = sample.addPublicInner(1, 2);
         assertEquals(3, result);
     }
 }

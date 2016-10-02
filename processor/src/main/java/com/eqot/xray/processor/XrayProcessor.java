@@ -203,6 +203,10 @@ public class XrayProcessor extends AbstractProcessor {
         for (Field field : clazz.getDeclaredFields()) {
             final Class<?> fieldType = field.getType();
 
+            if (java.lang.reflect.Modifier.isPrivate(fieldType.getModifiers())) {
+                break;
+            }
+
             final boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
             final List<Modifier> modifiers = new ArrayList<Modifier>() {{ add(Modifier.PUBLIC); }};
             if (isStatic) {
