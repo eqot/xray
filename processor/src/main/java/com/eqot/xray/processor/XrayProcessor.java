@@ -135,11 +135,11 @@ public class XrayProcessor extends AbstractProcessor {
             builder.addSuperinterface(superinterface);
         }
 
-        for (Class innerClass : clazz.getDeclaredClasses()) {
-            log(innerClass.getCanonicalName());
+//        for (Class innerClass : clazz.getDeclaredClasses()) {
+//            log(innerClass.getCanonicalName());
 //            TypeSpec typeSpec = buildClass(innerClass);
 //            builder.addType(typeSpec);
-        }
+//        }
 
         return builder.build();
     }
