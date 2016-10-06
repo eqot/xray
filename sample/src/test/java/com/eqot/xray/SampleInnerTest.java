@@ -8,11 +8,6 @@ import static junit.framework.Assert.assertEquals;
 
 @Xray(SampleInner.class)
 public class SampleInnerTest {
-
-//    @Xray(SampleInner.InnerClass.class)
-//    public class InnerClass {
-//    }
-
     @Test
     public void addPublicInner() throws Exception {
         final SampleInner$Xray sample = new SampleInner$Xray();
