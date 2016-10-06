@@ -30,6 +30,6 @@ ext {
 
     userOrg = 'eqot'
     groupId = 'com.eqot'
-    publishVersion = '1.3.0'
+    publishVersion = '1.3.1'
     website = 'https://github.com/eqot/xray'
 }
