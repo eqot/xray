@@ -37,6 +37,15 @@ public class Sample {
         return word0 + word1;
     }
 
+    private int sum(int[] values) {
+        int result = 0;
+        for (int value : values) {
+            result += value;
+        }
+
+        return result;
+    }
+
     private boolean nop(boolean value) { return value; }
     private byte nop(byte value) { return value; }
     private short nop(short value) { return value; }
@@ -51,12 +60,7 @@ public class Sample {
     private void nopWithIntArg(int value) {}
     private int nop() { return 123; }
 
-    private int sum(int[] values) {
-        int result = 0;
-        for (int value : values) {
-            result += value;
-        }
-
-        return result;
+    private int[] nop(int[] values) {
+        return values;
     }
 }

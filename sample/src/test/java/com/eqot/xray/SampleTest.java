@@ -5,6 +5,7 @@ import com.eqot.xray.xray.Sample$Xray;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 @Xray(Sample.class)
 public class SampleTest {
@@ -54,6 +55,13 @@ public class SampleTest {
         final Sample$Xray sample = new Sample$Xray();
         final String result = sample.add("12", "34");
         assertEquals("1234", result);
+    }
+
+    @Test
+    public void sum() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
+        final int result = sample.sum(new int[]{1, 2, 3, 4});
+        assertEquals(10, result);
     }
 
     @Test
@@ -129,9 +137,8 @@ public class SampleTest {
     }
 
     @Test
-    public void sum() throws Exception {
+    public void nopIntArray() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
-        final int result = sample.sum(new int[]{1, 2, 3, 4});
-        assertEquals(10, result);
+        assertArrayEquals(new int[]{1, 2, 3, 4}, sample.nop(new int[]{1, 2, 3, 4}));
     }
 }
