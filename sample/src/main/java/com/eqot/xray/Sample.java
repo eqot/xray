@@ -50,4 +50,13 @@ public class Sample {
 
     private void nopWithIntArg(int value) {}
     private int nop() { return 123; }
+
+    private int sum(int[] values) {
+        int result = 0;
+        for (int value : values) {
+            result += value;
+        }
+
+        return result;
+    }
 }

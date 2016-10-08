@@ -265,7 +265,7 @@ public class XrayProcessor extends AbstractProcessor {
                 builder.addParameter(parameterType, parameterName);
 
                 combinedParameters += ", " + parameterName;
-                combinedParameterTypes += ", " + parameterType.getName() + ".class";
+                combinedParameterTypes += ", " + parameterType.getSimpleName() + ".class";
 
                 parameterIndex++;
             }

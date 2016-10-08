@@ -127,4 +127,11 @@ public class SampleTest {
         final Sample$Xray sample = new Sample$Xray();
         sample.nopWithIntArg(123);
     }
+
+    @Test
+    public void sum() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
+        final int result = sample.sum(new int[]{1, 2, 3, 4});
+        assertEquals(10, result);
+    }
 }
