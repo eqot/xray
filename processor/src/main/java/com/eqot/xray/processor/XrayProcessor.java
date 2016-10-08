@@ -329,7 +329,7 @@ public class XrayProcessor extends AbstractProcessor {
             modifiers.add(Modifier.STATIC);
         }
 
-        // getField()
+        // getField(name)
         methods.add(MethodSpec.methodBuilder("getField")
                 .addModifiers(modifiers)
                 .addParameter(String.class, "fieldName")
@@ -337,15 +337,32 @@ public class XrayProcessor extends AbstractProcessor {
 
                 .addStatement("$T field = null", Field.class)
                 .beginControlFlow("try")
-                .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz)
+                .addStatement("field = getField($T.class, fieldName)", clazz)
+                .addStatement("field.setAccessible(true)")
+                .endControlFlow("catch (Exception e) {}")
+                .addStatement("return field")
+                .build());
+
+        // getField(class, name)
+        methods.add(MethodSpec.methodBuilder("getField")
+                .addModifiers(modifiers)
+                .addParameter(Class.class, "clazz")
+                .addParameter(String.class, "fieldName")
+                .returns(Field.class)
+                .addException(NoSuchFieldException.class)
+
+                .beginControlFlow("try")
+                .addStatement("return clazz.getDeclaredField(fieldName)")
                 .endControlFlow()
                 .beginControlFlow("catch (NoSuchFieldException e)")
-                .beginControlFlow("try")
-                .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz.getSuperclass())
-                .endControlFlow("catch (Exception e1) {}")
-                .endControlFlow("catch (Exception e) {}")
-                .addStatement("field.setAccessible(true)")
-                .addStatement("return field")
+                .addStatement("Class superClass = clazz.getSuperclass()")
+                .beginControlFlow("if (superClass == null)")
+                .addStatement("throw e")
+                .endControlFlow()
+                .beginControlFlow("else")
+                .addStatement("return getField(superClass, fieldName)")
+                .endControlFlow()
+                .endControlFlow()
                 .build());
 
         // getObject()
