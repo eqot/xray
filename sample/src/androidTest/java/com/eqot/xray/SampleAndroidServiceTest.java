@@ -32,4 +32,14 @@ public class SampleAndroidServiceTest extends ServiceTestCase<SampleAndroidServi
         final SampleAndroidService$Xray service = getService();
         assertEquals(123, service.mValue());
     }
+
+    @Test
+    public void testServiceMethod() throws Exception {
+        final Intent startIntent = new Intent();
+        startIntent.setClass(getContext(), SampleAndroidService$Xray.class);
+        startService(startIntent);
+
+        final SampleAndroidService$Xray service = getService();
+        assertEquals(3, service.add(1, 2));
+    }
 }

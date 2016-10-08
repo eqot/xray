@@ -36,5 +36,9 @@ public class SampleAndroidService extends Service {
         super.onDestroy();
         Log.d(TAG, "onDestroy: ");
     }
+
+    private int add(int value0, int value1) {
+        return value0 + value1;
+    }
 }
 
