@@ -2,10 +2,15 @@ package com.eqot.xray;
 
 import com.eqot.xray.xray.Sample$Xray;
 
+import org.hamcrest.core.Is;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThat;
 
 @Xray(Sample.class)
 public class SampleTest {
@@ -61,6 +66,13 @@ public class SampleTest {
     public void sum() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.sum(new int[]{1, 2, 3, 4});
+        assertEquals(10, result);
+    }
+
+    @Test
+    public void sumList() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
+        final int result = sample.sum(Arrays.asList(1, 2, 3, 4));
         assertEquals(10, result);
     }
 
@@ -140,5 +152,11 @@ public class SampleTest {
     public void nopIntArray() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         assertArrayEquals(new int[]{1, 2, 3, 4}, sample.nop(new int[]{1, 2, 3, 4}));
+    }
+
+    @Test
+    public void nopIntList() throws Exception {
+        final Sample$Xray sample = new Sample$Xray();
+        assertThat(sample.nop(Arrays.asList(1, 2, 3, 4)), Is.<List>is(Arrays.asList(1, 2, 3, 4)));
     }
 }

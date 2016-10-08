@@ -1,5 +1,7 @@
 package com.eqot.xray;
 
+import java.util.List;
+
 @SuppressWarnings("ALL")
 public class Sample {
     private int mValue;
@@ -46,6 +48,15 @@ public class Sample {
         return result;
     }
 
+    private int sum(List<Integer> values) {
+        int result = 0;
+        for (int value : values) {
+            result += value;
+        }
+
+        return result;
+    }
+
     private boolean nop(boolean value) { return value; }
     private byte nop(byte value) { return value; }
     private short nop(short value) { return value; }
@@ -61,6 +72,10 @@ public class Sample {
     private int nop() { return 123; }
 
     private int[] nop(int[] values) {
+        return values;
+    }
+
+    private List<Integer> nop(List<Integer> values) {
         return values;
     }
 }
