@@ -28,10 +28,6 @@ public class Sample {
         return value0 + value1;
     }
 
-    protected int addProtect(int value0, int value1) {
-        return value0 + value1;
-    }
-
     private int sub(int value0, int value1) {
         return value0 - value1;
     }

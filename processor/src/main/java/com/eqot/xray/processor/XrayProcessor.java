@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,7 +201,11 @@ public class XrayProcessor extends AbstractProcessor {
     private List<MethodSpec> buildSettersAndGetters(Class clazz) {
         final List<MethodSpec> methods = new ArrayList<>();
 
-        for (Field field : clazz.getDeclaredFields()) {
+        final List<Field> fields = new ArrayList<>();
+        Collections.addAll(fields, clazz.getDeclaredFields());
+        Collections.addAll(fields, clazz.getFields());
+
+        for (Field field : fields) {
             final Class<?> fieldType = field.getType();
 
             if (java.lang.reflect.Modifier.isPrivate(fieldType.getModifiers())) {
@@ -333,8 +338,13 @@ public class XrayProcessor extends AbstractProcessor {
                 .addStatement("$T field = null", Field.class)
                 .beginControlFlow("try")
                 .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz)
-                .addStatement("field.setAccessible(true)")
+                .endControlFlow()
+                .beginControlFlow("catch (NoSuchFieldException e)")
+                .beginControlFlow("try")
+                .addStatement("field = $T.class.getDeclaredField(fieldName)", clazz.getSuperclass())
+                .endControlFlow("catch (Exception e1) {}")
                 .endControlFlow("catch (Exception e) {}")
+                .addStatement("field.setAccessible(true)")
                 .addStatement("return field")
                 .build());
 
