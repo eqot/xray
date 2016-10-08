@@ -3,20 +3,23 @@ package com.eqot.xray;
 import android.content.Intent;
 import android.test.ServiceTestCase;
 
+import com.eqot.xray.xray.SampleAndroidService$Xray;
+
 import org.junit.Test;
 
-public class SampleAndroidServiceTest extends ServiceTestCase<SampleAndroidService> {
+@Xray(SampleAndroidService.class)
+public class SampleAndroidServiceTest extends ServiceTestCase<SampleAndroidService$Xray> {
     public SampleAndroidServiceTest() {
-        super(SampleAndroidService.class);
+        super(SampleAndroidService$Xray.class);
     }
 
     @Test
     public void testStartService() throws Exception {
         final Intent startIntent = new Intent();
-        startIntent.setClass(getContext(), SampleAndroidService.class);
+        startIntent.setClass(getContext(), SampleAndroidService$Xray.class);
         startService(startIntent);
 
-        final SampleAndroidService service = getService();
+        final SampleAndroidService$Xray service = getService();
         assertNotNull(service);
     }
 }
