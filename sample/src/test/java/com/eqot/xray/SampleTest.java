@@ -6,7 +6,9 @@ import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
@@ -74,6 +76,19 @@ public class SampleTest {
         final Sample$Xray sample = new Sample$Xray();
         final int result = sample.sum(Arrays.asList(1, 2, 3, 4));
         assertEquals(10, result);
+    }
+
+    @Test
+    public void getMap() throws Exception {
+        final Map<Integer, Integer> map = new HashMap<Integer, Integer>() {
+            { put(1, 2); }
+            { put(2, 4); }
+            { put(3, 6); }
+        };
+
+        final Sample$Xray sample = new Sample$Xray();
+        final int result = sample.get(map, 2);
+        assertEquals(4, result);
     }
 
     @Test
@@ -158,5 +173,21 @@ public class SampleTest {
     public void nopIntList() throws Exception {
         final Sample$Xray sample = new Sample$Xray();
         assertThat(sample.nop(Arrays.asList(1, 2, 3, 4)), Is.<List>is(Arrays.asList(1, 2, 3, 4)));
+    }
+
+    @Test
+    public void nopMap() throws Exception {
+        final Map<Integer, Integer> map = new HashMap<Integer, Integer>() {
+            { put(1, 2); }
+            { put(2, 4); }
+            { put(3, 6); }
+        };
+
+        final Sample$Xray sample = new Sample$Xray();
+        final Map<Integer, Integer> result = sample.nop(map);
+
+        assertEquals(2, (int) result.get(1));
+        assertEquals(4, (int) result.get(2));
+        assertEquals(6, (int) result.get(3));
     }
 }

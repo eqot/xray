@@ -1,6 +1,7 @@
 package com.eqot.xray;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("ALL")
 public class Sample {
@@ -57,6 +58,10 @@ public class Sample {
         return result;
     }
 
+    private Integer get(Map<Integer, Integer> map, int key) {
+        return map.get(key);
+    }
+
     private boolean nop(boolean value) { return value; }
     private byte nop(byte value) { return value; }
     private short nop(short value) { return value; }
@@ -77,5 +82,9 @@ public class Sample {
 
     private List<Integer> nop(List<Integer> values) {
         return values;
+    }
+
+    private Map<Integer, Integer> nop(Map<Integer, Integer> map) {
+        return map;
     }
 }
