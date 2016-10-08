@@ -11,6 +11,8 @@ public class SampleAndroidService extends Service {
     @SuppressWarnings("unused")
     private static final String TAG = SampleAndroidService.class.getSimpleName();
 
+    private int mValue = 123;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
