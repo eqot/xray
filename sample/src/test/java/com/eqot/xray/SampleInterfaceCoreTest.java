@@ -9,10 +9,8 @@ import static junit.framework.Assert.assertEquals;
 
 @Xray(SampleInterfaceCore.class)
 public class SampleInterfaceCoreTest {
-    @Xray(SampleInterfaceAdd.class)
-    public class Dummy {}
-
     @Test
+    @Xray(SampleInterfaceAdd.class)
     public void addInterface() throws Exception {
         final SampleInterfaceAdd$Xray add = new SampleInterfaceAdd$Xray();
         add.mDelta(3);
