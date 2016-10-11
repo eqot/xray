@@ -32,8 +32,8 @@ buildscript {
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
-    testApt 'com.eqot:xray-processor:1.3.1'
-    testCompile 'com.eqot:xray:1.3.1'
+    testApt 'com.eqot:xray-processor:1.4.0'
+    testCompile 'com.eqot:xray:1.4.0'
 }
 ```
 
@@ -43,8 +43,8 @@ or
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
-    androidTestApt 'com.eqot:xray-processor:1.3.1'
-    androidTestCompile 'com.eqot:xray:1.3.1'
+    androidTestApt 'com.eqot:xray-processor:1.4.0'
+    androidTestCompile 'com.eqot:xray:1.4.0'
 }
 ```
 
