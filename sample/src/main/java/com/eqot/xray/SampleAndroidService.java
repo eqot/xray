@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 
 public class SampleAndroidService extends Service {
@@ -12,6 +11,7 @@ public class SampleAndroidService extends Service {
     private static final String TAG = SampleAndroidService.class.getSimpleName();
 
     private int mValue = 123;
+    private Integer mUpdatedValue;
 
     @Nullable
     @Override
@@ -22,23 +22,23 @@ public class SampleAndroidService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate: ");
+
+        mUpdatedValue = 123;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand: ");
-        return START_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
+
+        mUpdatedValue = null;
     }
 
     private int add(int value0, int value1) {
         return value0 + value1;
     }
 }
-
