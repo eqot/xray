@@ -52,7 +52,7 @@ Please note that since this annotation breaks class's information hiding,
 it is strongly recommended for testing only.
 
 
-## Examples
+## Quick Start
 
 Here is an example of private methods and a field
 which need to be verified if it works as expected.
@@ -113,6 +113,17 @@ public void throwIllegalArgumentException() throws Exception {
     sample.throwIllegalArgumentException();
 }
 ```
+
+
+## Samples
+
+* [Simple method and field](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/Sample.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/test/java/com/eqot/xray/SampleTest.java)
+* [Static method and field](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleStatic.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/test/java/com/eqot/xray/SampleStaticTest.java)
+* [Super class](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleSuper.java), [Sub class](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleSub.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/test/java/com/eqot/xray/SampleSubTest.java)
+* [Interface](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleInterfaceCore.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/test/java/com/eqot/xray/SampleInterfaceCoreTest.java)
+* [Exception](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleException.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/test/java/com/eqot/xray/SampleExceptionTest.java)
+* [Simple class with Android class](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleAndroid.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/androidTest/java/com/eqot/xray/SampleAndroidTest.java)
+* [Simple Android service](https://github.com/eqot/xray/blob/master/sample/src/main/java/com/eqot/xray/SampleAndroidService.java) and [test](https://github.com/eqot/xray/blob/master/sample/src/androidTest/java/com/eqot/xray/SampleAndroidServiceTest.java)
 
 
 ## LICENSE
